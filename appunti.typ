@@ -282,6 +282,8 @@ Notiamo subito come:
 
 ==== Parametri in gioco
 
+===== Speed-up
+
 Confrontando $T(n, p(n))$ con $T(n,1)$ abbiamo due casi:
 - $T(n, p(n)) = Theta(T(n,1))$, caso che vogliamo evitare
 - $T(n, p(n)) = o(T(n,1))$, caso che vogliamo trovare
@@ -300,6 +302,8 @@ Ad esempio, nel problema di soddisfacibilità `SODD` potremmo utilizzare $2^n$ p
 
 Questo ci manda lo speed-up ad un valore che a noi piace, ma abbiamo utilizzato troppi processori
 
+===== Efficienza
+
 Introduciamo quindi la variabile di *efficienza*, definita come $ E(n, p(n)) = frac(S(n, p(n)), p(n)) = frac(T(n, 1)^*, T(n, p(n)) dot p(n)), $ dove $T(n,1)^*$ indica il miglior tempo sequenziale ottenibile
 
 #theorem()[
@@ -311,10 +315,115 @@ Introduciamo quindi la variabile di *efficienza*, definita come $ E(n, p(n)) = f
   \ La dimostrazione di $E lt.eq 1$ richiede di sequenzializzare un algoritmo parallelo, ottenendo un tempo $overset(T, tilde)(n,1)$ che però "fa peggio" del miglior algoritmo sequenziale $T(n,1)$, quindi $ T(n,1) lt.eq overset(T, tilde)(n,1) lt.eq p(n) dot t_1 (n) + dots + p(n) t_(k(n)) (n) $ La somma di destra rappresenta la sequenzializzazione dell'algoritmo parallelo, che richiede quindi un tempo uguale $p(n)$ volte il tempo che prima veniva eseguito al massimo in un passo parallelo \ Risolvendo il membro di destra otteniamo $ T(n,1) lt.eq sum_(i=1)^(k(n)) p(n) dot t_i (n) = p(n) sum_(i=1)^(k(n)) t_i (n) = p(n) dot T(n, p(n)) $ Se andiamo a dividere tutto per il membro di destra otteniamo quello che vogliamo dimostrare, ovvero $ T(n,1) lt.eq p(n) dot T(n, p(n)) arrow.double frac(T(n,1), p(n) dot T(n, p(n))) lt.eq 1 arrow.double E lt.eq 1 $
 ]<proof>
 
-Se $E arrow 0$ abbiamo dei problemi, perché nonostante un ottimo speed-up stiamo tendendo a $0$, ovvero il numero di processori è eccessivo
+===== Efficienza e numero di processori
 
-Devo quindi ridurre il numero di processori $p(n)$ senza degradare il tempo, passando da $p$ a $p / k$
+Iniziamo ad avere dei problemi quando $E arrow 0$: infatti, secondo il *principio di Wyllie*, se $E arrow 0$ quando $T(n, p(n)) = o(T(n,1))$ allora è $p(n)$ che sta crescendo troppo
+
+In poche parole, abbiamo uno speed-up ottimo ma abbiamo un'efficienza che va a zero per via del numero di processori
+
+La soluzione quasi naturale che viene in mente è quella di ridurre il numero di processori $p(n)$ senza degradare il tempo, passando da $p$ a $p / k$
 
 L'algoritmo parallelo ora non ha più $p$ processori, ma avendone di meno per garantire l'esecuzione di tutte le istruzioni vado a raggruppare in gruppi di $k$ le istruzioni sulla stessa riga, così che ogni processore dei $p / k$ a disposizione esegua $k$ istruzioni
 
 Il tempo per eseguire un blocco di $k$ istruzioni ora diventa $k dot t_i (n)$ nel caso peggiore, mentre il tempo totale diventa $ T(n, p/k) lt.eq sum_(i=1)^(k(n)) k dot t_i (n) = k sum_(i=1)^(k(n)) t_i (n) = k dot T(n, p(n)) $
+
+Calcoliamo l'efficienza con questo nuovo numero di processori, per vedere se è migliorata $ E(n, p/k) = frac(T(n,1), p/k dot T(n, p/k)) gt.eq frac(T(n,1), p/cancel(k) dot cancel(k) dot T(n, p(n))) = frac(T(n,1), p(n) dot T(n, p(n))) = E(n,p(n)) $
+
+Notiamo quindi che diminuendo il numero di processori l'efficienza aumenta
+
+Possiamo dimostrare infine che la nuova efficienza è comunque limitata superiormente da $1$ $ E(n, p(n)) lt.eq E(n, p/k) lt.eq E(n, p/p) = E(n, 1) = 1 $
+
+Dobbiamo comunque garantire la condizione di un buon speed-up, quindi $T(n, p/k) = o(T(n,1))$
+
+==== Sommatoria
+
+Cerchiamo un algoritmo parallelo per il calcolo di una *sommatoria*
+
+Il programma prende in input una serie di numeri $M[1], dots, M[n]$ inseriti nella memoria della PRAM e fornisce l'output in $M[n]$
+
+In poche parole, a fine programma si avrà $M[n] = limits(sum)_(i=1)^n M[i]$
+
+Un buon algoritmo sequenziale è quello che utilizza $M[n]$ come accumulatore, lavorando in tempo $T(n,1) = n-1$ senza usare memoria aggiuntiva
+
+#algo(
+  title: "Sommatoria sequenziale",
+  parameters: ("M[]", "n",)
+)[
+  for $i = 1$ to $n$ do:#i\
+  $M[n] = M[n] + M[i]$#d\
+  \
+  return M[n]
+]
+
+Un primo approccio parallelo potrebbe essere quello di far eseguire ad ogni processore una somma
+
+#v(12pt)
+
+#figure(
+    image("assets/sommatoria_naive.svg", width: 50%)
+)
+
+#v(12pt)
+
+Usiamo $n-1$ processori, ma abbiamo dei problemi:
+- l'albero che otteniamo ha altezza $n-1$
+- ogni processore deve aspettare la somma del processore precedente, quindi $T(n, n-1) = n-1$
+
+L'efficienza che otteniamo è $E(n, n-1) = frac(n-1, (n-1) dot (n-1)) arrow 0$
+
+Una soluzione migliore considera la _proprietà associativa_ della somma per effettuare delle somme $2$ a $2$
+
+#v(12pt)
+
+#figure(
+    image("assets/sommatoria_migliore_01.svg", width: 70%)
+)
+
+#v(12pt)
+
+Quello che otteniamo è un albero binario, sempre con $n-1$ processori ma l'altezza dell'albero logaritmica in $n$
+
+Il risultato di ogni somma viene scritto nella cella di indice maggiore, quindi vediamo la rappresentazione corretta
+
+#v(12pt)
+
+#figure(
+    image("assets/sommatoria_migliore_02.svg", width: 70%)
+)
+
+#v(12pt)
+
+Quello che possiamo fare è sommare, ad ogni passo $i$, gli elementi che sono a distanza $i$: partiamo sommando elementi adiacenti a distanza $1$, poi $2$, fino a sommare al passo $log(n)$ gli ultimi due elementi a distanza $n/2$
+
+#algo(
+  title: "Sommatoria parallela",
+  parameters: ("M[]", "n",)
+)[
+  for $i = 1$ to $log n$ do:#i\
+  for $k = 1$ to $frac(n,2^i)$ par do:#i\
+  $M[2^i k] = M[2^i k] + M[2^i k - 2^(i-1)]$#d#d\
+  \
+  return M[n]
+]
+
+Nell'algoritmo $k$ indica il numero di processori attivi nel passo parallelo
+
+===== EREW
+
+#theorem()[
+  L'algoritmo di sommatoria parallela è EREW
+]<thm>
+
+#proof[
+  \ Dobbiamo mostrare che al passo parallelo $i$ il processore $a$, che utilizza $2^i a$ e $2^i a - 2^(i-1)$, legge e scrive celle di memoria diverse rispetto a quelle usate dal processore $b$, che utilizza $2^i b$ e $2^i b - 2^(i-1)$ \ Mostriamo che $2^i a eq.not 2^i b$: questo è banale se $a eq.not b$ \ Mostriamo infine che $2^i a eq.not 2^i b - 2^(i-1)$: supponiamo per assurdo che siano uguali, allora $2 dot frac(2^i a, 2^i) = 2 dot frac(2^i b - 2^(i-1), 2^i) arrow.long.double 2a = 2b -1 arrow.long.double a = frac(2b - 1, 2)$ ma questo è assurdo perché $a in NN$
+]<proof>
+
+===== Correttezza
+
+#theorem()[
+  L'algoritmo di sommatoria parallela è corretto
+]<thm>
+
+#proof[
+  \ Per dimostrare che è corretto mostriamo che al passo parallelo $i$ nella cella $2^i k$ ho i $2^i - 1$ valori precedenti, sommati a $M[2^i k]$, ovvero che $M[2^i k] = M[2^i k] + dots + M[2^i (k-1) + 1]$ \ Notiamo che se $i = log(n)$ allora ho un solo processore $k=1$ e ottengo la definizione di sommatoria, ovvero $M[n] = M[n] + dots + M[1]$ \ Dimostriamo per induzione \ Passo base: se $i = 1$ allora $M[2k] = M[2k] + M[2k-1]$ \ Passo induttivo: ...
+]<proof>
