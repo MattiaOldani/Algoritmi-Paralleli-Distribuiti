@@ -1,27 +1,56 @@
 #let project(title: "", body) = {
-    set document(title: title)
+  set document(title: title)
 
-    set text(font: "Source Sans Pro", lang: "it")
-    set text(hyphenate: false)
+  set text(font: "Source Sans Pro", lang: "it")
 
-    set par(justify: true)
+  set par(justify: true)
 
-    set heading(numbering: "1.")
+  set heading(numbering: "1.")
 
-    align(center)[
-        #block(text(weight: 700, 1.75em, title))
-    ]
+  set list(indent: 1.2em)
+  set enum(indent: 1.2em)
 
-    v(1.75em)
+  set page(numbering: "1")
 
-    show outline.entry.where(
-        level: 1
-    ): it => {
-        v(12pt, weak: true)
-        strong(it)
+  align(center)[
+    #block(text(weight: 700, 1.75em, title))
+  ]
+
+  v(1.75em)
+
+  show outline.entry: it => {
+    if it.element.func() == figure {
+      // https://github.com/typst/typst/issues/2461
+      let res = link(
+        it.element.location(),
+        if it.element.numbering != none {
+          it.element.supplement + [ ]
+          numbering(it.element.numbering, ..it.element.counter.at(it.element.location()))
+        } + [ --- ] + it.element.body,
+      )
+
+      res += h(1fr)
+
+      res += link(it.element.location(), it.page)
+      v(2.3em, weak: true)
+      strong(text(size: 13pt, res))
+    } else {
+      h(1em * (it.level - 1)) + it
     }
+  }
 
-    outline(indent: auto)
+  show outline.entry.where(level: 1): it => {
+    v(12pt, weak: true)
+    strong(it)
+  }
 
-    body
+  let chapters-and-headings = heading.where(outlined: true)
+
+  pagebreak()
+
+  outline(indent: auto, target: chapters-and-headings)
+
+  show link: underline
+
+  body
 }
