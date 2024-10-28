@@ -30,3 +30,6 @@
 #pagebreak()
 
 #include "lezioni/lezione08.typ"
+#pagebreak()
+
+#include "lezioni/lezione09.typ"
