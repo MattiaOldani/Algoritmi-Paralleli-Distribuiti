@@ -72,3 +72,6 @@
 #pagebreak()
 
 #include "lezioni/lezione22.typ"
+#pagebreak()
+
+#include "lezioni/lezione23.typ"
