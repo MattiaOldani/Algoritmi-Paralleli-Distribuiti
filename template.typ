@@ -12,11 +12,23 @@
 
   set page(numbering: "1")
 
-  align(center)[
-    #block(text(weight: 700, 1.75em, title))
+  align(center + horizon)[
+    #block(text(weight: 700, 2.75em, title))
   ]
 
-  v(1.75em)
+  pagebreak()
+
+  show figure.where(kind: "parte"): it => {
+    counter(heading).update(0)
+    set page(footer: { })
+    if it.numbering != none {
+      set text(size: 20pt)
+      align(
+        center + horizon,
+        strong(it.supplement + [ ] + it.counter.display(it.numbering)) + [ --- ] + strong(it.body),
+      )
+    }
+  }
 
   show outline.entry: it => {
     if it.element.func() == figure {
@@ -26,7 +38,9 @@
         if it.element.numbering != none {
           it.element.supplement + [ ]
           numbering(it.element.numbering, ..it.element.counter.at(it.element.location()))
-        } + [ --- ] + it.element.body,
+        }
+          + [ --- ]
+          + it.element.body,
       )
 
       res += h(1fr)
@@ -44,9 +58,7 @@
     strong(it)
   }
 
-  let chapters-and-headings = heading.where(outlined: true)
-
-  pagebreak()
+  let chapters-and-headings = figure.where(kind: "parte", outlined: true).or(heading.where(outlined: true))
 
   outline(indent: auto, target: chapters-and-headings)
 
@@ -54,3 +66,12 @@
 
   body
 }
+
+#let parte = figure.with(
+  kind: "parte",
+  numbering: none,
+  supplement: "Parte",
+  caption: [],
+)
+
+#let parte = parte.with(numbering: "I")
