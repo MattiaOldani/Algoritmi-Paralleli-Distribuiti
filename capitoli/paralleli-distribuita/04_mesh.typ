@@ -1,4 +1,6 @@
-#import "alias.typ": *
+// Setup
+
+#import "../alias.typ": *
 
 #import "@preview/lovelace:0.3.0": pseudocode-list
 
@@ -16,7 +18,53 @@
 #show: thmrules.with(qed-symbol: $square.filled$)
 
 
-= Lezione 18
+// Capitolo
+
+/*********************************************/
+/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
+/*********************************************/
+#set heading(numbering: "1.")
+
+#show outline.entry.where(level: 1): it => {
+  v(12pt, weak: true)
+  strong(it)
+}
+
+#outline(indent: auto)
+/*********************************************/
+/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
+/*********************************************/
+
+= Architettura MESH
+
+Usate dai supercomputer, array bidimensionale ovvero griglia di processori
+
+Avendo $n$ processori abbiamo un quadrato $m times m$ con $m = sqrt(n)$ disposti come una matrice. Se $n$ non è un quadrato perfetto prendiamo $ (floor(sqrt(n)) + 1)^2 lt.eq 2n $ per $n gt.eq 6$ quindi va bene lo stesso
+
+Parametri di rete:
+- $gamma = 4$ (secondo lei è $rho$)
+- $delta = 2 sqrt(n)$ perché devo fare la scala
+- $beta tilde sqrt(n)$ (due diversi tagli)
+
+I nostri lower bound diventano $Omega(sqrt(n))$ per max e $Omega(sqrt(n))$ per l'ordinamento, quindi tanta roba
+
+Vediamo il massimo: idea immediata se usiamo la mesh come array lineare di $n$ processori, facendo tipo serpentello, ma si ottiene $Omega(n)$ per il tempo contro $Omega(sqrt(n))$ che abbiamo adesso in una mesh
+
+Pensiamo ad un algoritmo righe-colonna, ovvero non penso al serpentello ma anche ad alte connessioni. Ogni riga è un array lineare di $sqrt(n)$ processori, in più anche l'ultima colonna è un array lineare di $sqrt(n)$ processori. Sposto i massimi di ogni riga in fondo e poi max dei massimi.
+
+#align(center)[
+  #pseudocode-list()[
+    + $m = sqrt(n)$
+    + for $i = 1$ to $m$ par do
+      + MAX(Pi1, Pi2, dots, Pim)
+      - in Pim ho il massimo ora
+    + MAX(P1m, P2m, dots, Pmm)
+  ]
+]
+
+Tempo per la parte 1 è $sqrt(n)$, idem per la seconda parte, quindi eseguo in tempo $O(sqrt(n))$ quindi siamo soddisfatti. Efficienza purtroppo è $ frac(n, n sqrt(n)) arrow.long 0 $ quindi riduciamo i processori
+
+Passiamo da $n$ a $p$, ma andiamo avanti prossima volta
 
 Riprendiamo ancora la mesh
 
@@ -89,4 +137,4 @@ Processori sono $p(n) = n$ e il tempo è $T(n) = O(sqrt(n))$ quindi $ E = frac(n
 
 Possiamo migliorare riducendo i processori, ma non lo vedremo
 
-Con una versione del bitonic sort su mesh usa processori $O(log^2(n))$ e tempo $T(n) = O(n / log(n))$ che è efficiente, ma come tempo è peggiore di LS3
+Con una versione del bitonic sort su mesh usa processori $O(log^2(n))$ e tempo $T(n) = O(n / log(n))$ che è efficiente, ma come tempo è peggiore di LS3.
