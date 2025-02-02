@@ -1,4 +1,6 @@
-#import "alias.typ": *
+// Setup
+
+#import "../alias.typ": *
 
 #import "@preview/lovelace:0.3.0": pseudocode-list
 
@@ -16,7 +18,24 @@
 #show: thmrules.with(qed-symbol: $square.filled$)
 
 
-= Lezione 15
+// Capitolo
+
+/*********************************************/
+/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
+/*********************************************/
+#set heading(numbering: "1.")
+
+#show outline.entry.where(level: 1): it => {
+  v(12pt, weak: true)
+  strong(it)
+}
+
+#outline(indent: auto)
+/*********************************************/
+/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
+/*********************************************/
+
+= Max e ordinamento
 
 Problemi che vedremo sulle architetture parallela a memoria distribuita:
 - max: comunicazione a coppie di processori $delta$ basso comunicazione veloce
