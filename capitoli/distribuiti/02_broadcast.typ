@@ -1,4 +1,6 @@
-#import "alias.typ": *
+// Setup
+
+#import "../alias.typ": *
 
 #import "@preview/lovelace:0.3.0": pseudocode-list
 
@@ -16,7 +18,76 @@
 #show: thmrules.with(qed-symbol: $square.filled$)
 
 
-= Lezione 20
+// Capitolo
+
+/*********************************************/
+/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
+/*********************************************/
+#set heading(numbering: "1.")
+
+#show outline.entry.where(level: 1): it => {
+  v(12pt, weak: true)
+  strong(it)
+}
+
+#outline(indent: auto)
+/*********************************************/
+/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
+/*********************************************/
+
+= Broadcasting
+
+Pinit una entità tiene I: $ exists x in E bar.v "valore"(x) and forall y eq.not x quad "valore"(y) = emptyset.rev $
+
+Pfinal: tutte le entità ce l'hanno, ovvero $ forall x in E quad "valore"(x) = I $
+
+Le restrizioni sono:
+- link bidirezionali BL
+- affidabilità totale TR (total reliability)
+- connettività CN
+- queste tre sono R
+- unico iniziatore UI (parte solo il primo che contiene x, detta I sta cosa)
+
+Tutto detto RI
+
+Vediamo un algoritmo distribuito / protollo
+
+Diamo l'insieme di regole stato times evento --> azione:
+- stato_t(x) stato di x al tempo t
+- evento è impulso spontaneo, sveglia o messaggio
+- azione è mini programma indivisibile
+
+L'esecuzione di un protocollo genera una sequenza di configurazioni successive del sistema
+
+Sia $sum(t)$ il contenuto dei registri delle entità al tempo $t$, sia futuro(t) eventi già generati al tempo $t$ ma che non sono ancora processati
+
+Indichiamo con $C(t)$ la configurazione del sistema del tempo $t$, definita dalla coppia $sum(t), "futuro"(t)$
+
+Definiamo $C(0) = (Sigma(0), "Futuro"(0))$ registri inizializzati + impulso spontaneo
+
+L'esecuzione del protocollo è una sequenza di configurazioni successive tale che $C(0)$ a $C(f)$ con il protocollo
+
+Quando una C soddisfa P lo scriviamo con $C in P$
+
+Dobbiamo definire come un protocollo risolve un problema (definita dalla tripla)
+
+Usiamo due stati S = {iniziatore, inattivo}. Abbiamo Sinit = stati delle entità in C(0) e Sterm = stati delle entità in C(f)
+
+== Prima versione
+
+S = {iniziatore, inattivo}, Sinit = {iniziatore, inattivo} e Sfinal = {inattivo}
+
+Iniziatore, se ricevo impulso spontaneo
+- send(M) to N(x)
+- become inattivo
+
+Inattivo, se ricevo M
+- processa M (preleva informazione e mettila in valore)
+- send(M) to N(x)
+
+Il messaggio è $M = (t, o, d, I)$ con $t$ tipologia del mex, o e d sono origine e destinatario, I informazione
+
+Abbiamo un problema
 
 Problema dell'altra volta: protocollo corretto ma non termina, perché dopo lo stato iniziale tutto diventa inattivo e gli inattivi ricevono, processano e mandano ancora in giro. Non funziona anche se modifichiamo imponendo di non mandare a chi me l'ha mandato.
 
