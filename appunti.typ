@@ -1,80 +1,79 @@
-// Setup
+// Titolo e indice
 
-#import "template.typ": project
+#import "template.typ": *
 
 #show: project.with(title: "Algoritmi paralleli e distribuiti")
 
 #pagebreak()
 
-// Lezioni
+// Algoritmi paralleli
 
-#include "lezioni/lezione01.typ"
+#parte("Algoritmi paralleli")
 #pagebreak()
 
-#include "lezioni/lezione02.typ"
+#include "capitoli/paralleli/01_introduzione.typ"
 #pagebreak()
 
-#include "lezioni/lezione03.typ"
+#include "capitoli/paralleli/02_architetture.typ"
 #pagebreak()
 
-#include "lezioni/lezione04.typ"
+#include "capitoli/paralleli/03_sommatoria.typ"
 #pagebreak()
 
-#include "lezioni/lezione05.typ"
+#include "capitoli/paralleli/04_applicazioni-sommatoria.typ"
 #pagebreak()
 
-#include "lezioni/lezione06.typ"
+#include "capitoli/paralleli/05_somme-prefisse.typ"
 #pagebreak()
 
-#include "lezioni/lezione07.typ"
+#include "capitoli/paralleli/06_valutazione-polinomi.typ"
 #pagebreak()
 
-#include "lezioni/lezione08.typ"
+#include "capitoli/paralleli/07_ricerca.typ"
 #pagebreak()
 
-#include "lezioni/lezione09.typ"
+#include "capitoli/paralleli/08_ordinamento.typ"
 #pagebreak()
 
-#include "lezioni/lezione10.typ"
+#include "capitoli/paralleli/09_navigazione.typ"
 #pagebreak()
 
-#include "lezioni/lezione11.typ"
+// Algoritmi paralleli e memoria distribuita
+
+#parte("Algoritmi paralleli a memoria distribuita")
 #pagebreak()
 
-#include "lezioni/lezione12.typ"
+#include "capitoli/paralleli-distribuita/01_introduzione.typ"
 #pagebreak()
 
-#include "lezioni/lezione13.typ"
+#include "capitoli/paralleli-distribuita/02_max-ordinamento.typ"
 #pagebreak()
 
-#include "lezioni/lezione14.typ"
+#include "capitoli/paralleli-distribuita/03_array-lineari.typ"
 #pagebreak()
 
-#include "lezioni/lezione15.typ"
+#include "capitoli/paralleli-distribuita/04_mesh.typ"
 #pagebreak()
 
-#include "lezioni/lezione16.typ"
+// Algoritmi distribuiti
+
+#parte("Algoritmi distribuiti")
 #pagebreak()
 
-#include "lezioni/lezione17.typ"
+#include "capitoli/distribuiti/01_introduzione.typ"
 #pagebreak()
 
-#include "lezioni/lezione18.typ"
+#include "capitoli/distribuiti/02_broadcast.typ"
 #pagebreak()
 
-#include "lezioni/lezione19.typ"
+#include "capitoli/distribuiti/03_traversal.typ"
 #pagebreak()
 
-#include "lezioni/lezione20.typ"
+#include "capitoli/distribuiti/04_spanning-tree.typ"
 #pagebreak()
 
-#include "lezioni/lezione21.typ"
+#include "capitoli/distribuiti/05_election.typ"
 #pagebreak()
 
-#include "lezioni/lezione22.typ"
+#include "capitoli/distribuiti/06_routing.typ"
 #pagebreak()
-
-#include "lezioni/lezione23.typ"
-#pagebreak()
-
-#include "lezioni/lezione24.typ"
