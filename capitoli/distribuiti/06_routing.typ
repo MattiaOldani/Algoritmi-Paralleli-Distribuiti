@@ -1,4 +1,6 @@
-#import "alias.typ": *
+// Setup
+
+#import "../alias.typ": *
 
 #import "@preview/lovelace:0.3.0": pseudocode-list
 
@@ -16,9 +18,24 @@
 #show: thmrules.with(qed-symbol: $square.filled$)
 
 
-= Lezione 24
+// Capitolo
 
-== Routing
+/*********************************************/
+/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
+/*********************************************/
+#set heading(numbering: "1.")
+
+#show outline.entry.where(level: 1): it => {
+  v(12pt, weak: true)
+  strong(it)
+}
+
+#outline(indent: auto)
+/*********************************************/
+/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
+/*********************************************/
+
+= Routing
 
 Scopo: x vuole spedire messaggio a y, vuole cammino in G da x a y
 
