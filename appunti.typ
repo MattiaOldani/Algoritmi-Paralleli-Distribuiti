@@ -21,7 +21,7 @@
 #include "capitoli/paralleli/01_architetture.typ"
 #pagebreak()
 
-#include "capitoli/paralleli/03_sommatoria.typ"
+#include "capitoli/paralleli/02_sommatoria.typ"
 #pagebreak()
 
 #include "capitoli/paralleli/04_applicazioni-sommatoria.typ"
