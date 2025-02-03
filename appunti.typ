@@ -18,7 +18,7 @@
 #parte("Algoritmi paralleli")
 #pagebreak()
 
-#include "capitoli/paralleli/02_architetture.typ"
+#include "capitoli/paralleli/01_architetture.typ"
 #pagebreak()
 
 #include "capitoli/paralleli/03_sommatoria.typ"
