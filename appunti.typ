@@ -24,7 +24,7 @@
 #include "capitoli/paralleli/02_sommatoria.typ"
 #pagebreak()
 
-#include "capitoli/paralleli/04_applicazioni-sommatoria.typ"
+#include "capitoli/paralleli/03_applicazioni-sommatoria.typ"
 #pagebreak()
 
 #include "capitoli/paralleli/05_somme-prefisse.typ"
