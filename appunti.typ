@@ -6,12 +6,16 @@
 
 #pagebreak()
 
+
+// Introduzione
+
+#include "capitoli/00_introduzione.typ"
+#pagebreak()
+
+
 // Algoritmi paralleli
 
 #parte("Algoritmi paralleli")
-#pagebreak()
-
-#include "capitoli/paralleli/01_introduzione.typ"
 #pagebreak()
 
 #include "capitoli/paralleli/02_architetture.typ"
@@ -38,6 +42,7 @@
 #include "capitoli/paralleli/09_navigazione.typ"
 #pagebreak()
 
+
 // Algoritmi paralleli e memoria distribuita
 
 #parte("Algoritmi paralleli a memoria distribuita")
@@ -54,6 +59,7 @@
 
 #include "capitoli/paralleli-distribuita/04_mesh.typ"
 #pagebreak()
+
 
 // Algoritmi distribuiti
 
