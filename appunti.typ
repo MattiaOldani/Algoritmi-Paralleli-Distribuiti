@@ -30,7 +30,7 @@
 #include "capitoli/paralleli/04_somme-prefisse.typ"
 #pagebreak()
 
-#include "capitoli/paralleli/06_valutazione-polinomi.typ"
+#include "capitoli/paralleli/05_valutazione-polinomi.typ"
 #pagebreak()
 
 #include "capitoli/paralleli/07_ricerca.typ"
