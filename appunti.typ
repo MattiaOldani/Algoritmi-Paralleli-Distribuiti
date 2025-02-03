@@ -33,7 +33,7 @@
 #include "capitoli/paralleli/05_valutazione-polinomi.typ"
 #pagebreak()
 
-#include "capitoli/paralleli/07_ricerca.typ"
+#include "capitoli/paralleli/06_ricerca.typ"
 #pagebreak()
 
 #include "capitoli/paralleli/08_ordinamento.typ"
