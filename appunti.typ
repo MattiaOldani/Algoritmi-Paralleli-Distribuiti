@@ -27,7 +27,7 @@
 #include "capitoli/paralleli/03_applicazioni-sommatoria.typ"
 #pagebreak()
 
-#include "capitoli/paralleli/05_somme-prefisse.typ"
+#include "capitoli/paralleli/04_somme-prefisse.typ"
 #pagebreak()
 
 #include "capitoli/paralleli/06_valutazione-polinomi.typ"
