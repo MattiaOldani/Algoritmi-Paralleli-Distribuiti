@@ -20,70 +20,38 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Introduzione
 
-Osservazioni finali sulle PRAM:
-- interesse teorico
-  - processori sono uguali e alla pari
-  - il tempo è strettamente legato alla computazione (comunicazione costante)
-- interesse pratico
-  - realizzazione fisica dei multicore
+Le *architetture parallele a memoria distribuita* era il paradigma utilizzato prima del multicore (_PRAM_), usato dai supercomputer più famosi come Cray, Intel Paragon, Blue Gene, Red Storm, Earth Simulator o Tianhe-2.
 
-Multicore ha portato l'interesse del calcolo parallelo da ambiti scientifici ad un ambiente più ampio, tipo consumatore o informatico.
+Queste architetture sono dei *grafi*, dove:
+- i *nodi* sono dei processori, ovvero delle *RAM sequenziali* che hanno istruzioni per il calcolo e una memoria privata per effettuare calcoli; vedremo che questi nodi sono anche dei *router*;
+- gli *archi* sono *reti di connessioni*.
 
-Prima del 2000 per aumentare le prestazioni si aumentava il clock con problemi:
-- di assorbimento di energia (> 100W)
-- di raffreddamento
+La comunicazione avviene con le primitive *SEND* e *RECEIVE* in parallelo. *ATTENZIONE*: la comunicazione è in parallelo, ovvero le send e le receive avvengono in parallelo, ma un singolo processore lavora sequenzialmente quindi se arrivano $k$ messaggi al processore $P_i$ saranno necessarie $k$ receive.
 
-Dopo il 2000 arrivano i multicore, si aumenta il grado di parallelismo con:
-- clock di minor frequenza
-- minor assorbimento di energia
-- vantaggi sul raffreddamento
+I collegamenti sono di tipo *full-duplex*, ovvero il grafo che stiamo considerando è non orientato.
 
-Questo porta allo sviluppo teorico in ambito di algoritmi paralleli (scrittura, riscrittura, manipolazione di software per i multicore).
+Come nella PRAM, abbiamo un *clock* centrale che scandisce il tempo per tutti i processori.
 
-== Architetture parallele a memoria distribuita
+Il programma, come nelle PRAM, utilizza il *passo parallelo* con architettura SIMD.
 
-Architetture parallele a memoria distribuita erano i paradigmi usati prima del multicore, usato dai supercomputer (anni 60 cray e intel paragon, mentre attuali cray, blue gene, red storm, earth simulator, tianhe-2)
+#align(center)[
+  #pseudocode-list(title: [*Passo parallelo*])[
+    + for $i in II$ par do
+      + $istr(k)$
+  ]
+]
 
-Sono supercomputer a memoria distribuita, ovvero sono grafi con nodi processori e archi reti di connessioni. Alle PRAM manca la memoria condivisa.
+Due sono i fattori che sono profondamente modificati:
+- l'*input* non lo leggiamo più dalla memoria condivisa, come nella PRAM, ma lo dobbiamo distribuire tra i vari processori;
+- l'*output* viene messo in un processore dedicato o si legge in un certo ordine tra i processori.
 
-I processori sono RAM sequenziali con:
-- elementi di calcolo, hanno istruzioni per il calcolo e la loro memoria privata
-- router, hanno istruzioni per la comunicazione di send e receive
+Le *risorse di calcolo* sono:
+- *numero di processori*;
+- *tempo di calcolo* e *tempo di comunicazione*, legato alla rete di connessioni.
 
-La comunicazione avviene in parallelo, ma se $p_1, dots, p_k$ mandano contemporaneamente dati a $p$ essi sono fatti in modo simultaneo, ma $p$ lavora sequenzialmente quindi deve fare $k$ receive, quindi servono $k+1$ passi per la comunicazione (send parallela e $k$ receive).
-
-I collegamenti sono di tipo full-duplex, ovvero comunicazione diretta, archi non orientati. Se c'è collegamento diretto la comunicazione costa $2$ passi (send e receive).
-
-Abbiamo anche un clock centrale che scandisce il tempo per tutti i processori.
-
-Il programma, come nelle PRAM, è un PAR DO, quindi $ &"for k in I par do" \ &quad "istruzione k" $ con anche send e receive (architettura SIMD single instruction multiple data)
-
-Cambiano input e output: non abbiamo più la memoria condivisa come la PRAM, quindi l'input viene distribuito tra i processori, mentre l'output o viene messo in un processore dedicato o si legge in un certo ordine tra i vari processori.
-
-Le risorse di calcolo sono:
-- numero di processori: può essere la lunghezza dell'input ma ci sono tecniche per abbassare il numero
-- tempo, dato da:
-  - tempo di calcolo
-  - tempo di comunicazione, può essere rilevante ed è legato alla rete di connessioni
-
-Abbiamo i seguenti parametri di rete: data l'architettura $G = (V,E)$ definiamo:
-- grado di $G$: per ogni vertice calcoliamo $ gamma = max{rho(v) bar.v v in V} $ dove $rho(v)$ è il numero di archi incidenti su $v$; un valore alto permette buone comunicazioni ma rende più difficile la realizzazione fisica
-- diametro di $G$: definiamo $ delta = max{d(v,w) bar.v v,w in V and v eq.not w} $ come il massimo tra tutte le distanze minime da $v$ e $w$; valori bassi di $delta$ sono da preferire, ma aumentano il parametro $gamma$
-- ampiezza di bisezione di $G$: sia $beta$ il minimo numero di archi in $G$ che tolti mi dividono i nodi in circa due metà; esso rappresenta la capacità di trasferire le informazioni in $G$, ancora una volta $beta$ alto si preferisce ma incrementa $gamma$
+Data l'architettura $G = (V,E)$, definiamo i seguenti *parametri di rete*:
+- *grado* di $G$: definiamo $ gamma = max{rho(v) bar.v v in V} , $ dove $rho(v)$ è il numero di archi incidenti su $v$. Un valore alto permette buone comunicazioni, ma rende più difficile la realizzazione fisica;
+- *diametro* di $G$: definiamo $ delta = max{d(v,w) bar.v v,w in V and v eq.not w} , $ dove $d(v,w)$ è la distanza minima tra i due vertici. Un valore basso è da preferire, ma aumenta il valore del parametro $gamma$;
+- *ampiezza di bisezione* di $G$: definiamo $beta$ come il minimo numero di archi in $G$ che tolti da quest'ultimo mi dividono i nodi in circa due metà. Questa quantità rappresenta la capacità di trasferire le informazioni in $G$. Un valore alto di $beta$ alto è da preferire, ma aumenta ancora il valore del parametro $gamma$.
