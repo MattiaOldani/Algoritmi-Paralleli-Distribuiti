@@ -20,3 +20,27 @@
 #let istr(i) = $"istruzione"_(#i)$
 
 #let over(base, simbolo) = overset(base, simbolo)
+
+#let pad(x) = {
+  let padop = math.class(
+    "unary",
+    "pad",
+  )
+  $padop(#x)$
+}
+
+#let sin(x) = {
+  let sinop = math.class(
+    "unary",
+    "sin",
+  )
+  $sinop(#x)$
+}
+
+#let des(x) = {
+  let desop = math.class(
+    "unary",
+    "des",
+  )
+  $desop(#x)$
+}

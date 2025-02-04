@@ -39,7 +39,7 @@
 #include "capitoli/paralleli/07_ordinamento.typ"
 #pagebreak()
 
-#include "capitoli/paralleli/09_navigazione.typ"
+#include "capitoli/paralleli/08_navigazione.typ"
 #pagebreak()
 
 
