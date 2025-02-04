@@ -36,7 +36,7 @@
 #include "capitoli/paralleli/06_ricerca.typ"
 #pagebreak()
 
-#include "capitoli/paralleli/08_ordinamento.typ"
+#include "capitoli/paralleli/07_ordinamento.typ"
 #pagebreak()
 
 #include "capitoli/paralleli/09_navigazione.typ"
