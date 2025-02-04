@@ -20,99 +20,103 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Max e ordinamento
 
-Problemi che vedremo sulle architetture parallela a memoria distribuita:
-- max: comunicazione a coppie di processori $delta$ basso comunicazione veloce
-- ordinamento: spostamenti di parti dell'input $beta$ alto ordinamento efficiente
+Due problemi che vedremo nelle prossime architetture sono *max* e *ordinamento*.
 
-Valgono i seguenti limiti inferiori per i tempi di soluzione
+Il problema *Max* si risolve facendo comunicare ogni coppia di processori, così che ogni processore possa calcolare nella sua memoria il valore massimo della sequenza.
 
 #lemma()[
-  Il tempo richiesto per MAX in G è almeno $delta$
+  Il tempo richiesto per Max in $G$ è almeno $delta$.
 ]
 
 #proof()[
-  Ogni coppia di processori deve comunicazione, quindi servono almeno $delta$ passo parallelo
+  Ogni coppia di processori deve comunicare, quindi anche i due processori a distanza massima, ma la distanza massima è il diametro $delta$.
 ]
 
+Il problema *Ordinamento* si risolve trasferendo valori tra i processori per avere un ordinamento crescente. Vediamo un bound anche per questo problema.
+
 #lemma()[
-  Il tempo richiesto per ORDINAMENTO in G è almeno $ n/2 1/beta $
+  Il tempo richiesto per Ordinamento in $G$ è almeno $ n/(2 beta) . $
 ]
 
 #proof()[
-  Divido il grafo in due metà:
-  - in $n/2$ ho i numeri più alti
-  - in $n/2$ ho i numeri più bassi
+  Dividiamo il grafo in due metà:
+  - in $n/2$ nodi ho i numeri più alti;
+  - in $n/2$ nodi ho i numeri più bassi.
 
-  Noi vogliamo crescente, nel caso peggiore sono tutto decrescente
+  Il caso peggiore che possiamo avere è una sequenza ordinata in modo decrescente. Devo quindi scambiare tutte le posizioni delle due zone.
 
-  Quanti trasferimenti devo fare? Posso trasferire da una nuvola all'altra in beta, quindi facendo $n/2$ ci metto $n/2 1/beta$. Perché ho a disposizione $beta$ ponti.
+  Posso trasferire da una zona all'altra usando i $beta$ ponti che definiscono la ampiezza di bisezione. Dovendo trasferire $n/2$ valori usando $beta$ ponti, il numero di iterazioni è $ frac(n, 2 beta) . qedhere $
 ]
 
-Per analizzare questi problemi abbiamo bisogno dei confrontatori/comparatori e delle loro primitive.
+Per analizzare questi problemi abbiamo bisogno di una serie di oggetti molto carini, i *confrontatori* (_comparatori_), e anche delle loro primitive. Questi oggetti sono dei *ponti* che collegano due fili; una volta che il confrontatore prende in input i valori dei due fili, in quello sopra mette il *valore minimo* e in quello sotto mette il *valore massimo*.
 
-Sono dei ponti che collegano due fili, sopra mettono il minimo e sotto il massimo dei due valori
+Ci sono alcuni confrontatori che invertono l'ordine dei due fili. Come possiamo distinguere le due tipologie? Se il confrontare lavora come piace a noi allora il cerchio utilizzato è pieno, altrimenti il cerchio utilizzato è vuoto.
 
-if A[i] > A[j] then SWAP(A[i], A[j]) con i < j
+#v(12pt)
 
-Ci sono alcuni che fanno il contrario, quindi max sopra min sotto e il confronto ha il minore. Se minimo sopra cerchio, se minimo sotto cerchio vuoto.
+#figure(image("assets/02_confrontatori.svg", width: 70%))
 
-Possiamo creare reti di confrontatori, ovvero metto un input per ogni filo e metto una serie di confrontatori. Una sorting network è una rete di confrontatori che ordina
+#v(12pt)
 
-Metti esempio per 3 e 4 elementi
+Con i confrontatori possiamo create delle *reti di confrontatori*, ovvero delle reti che spostano sopra e sotto i valori inseriti nei fili. Una *sorting network* è una rete di confrontatori capace di ordinare una sequenza di valori contenuta nei fili.
 
-Una rete generale di ordinamento è data dal bubble sort, ovvero ad ogni fase l'elemento più pesante viene spinto verso il basso.
+Qua sotto vediamo un esempio di sorting network per input di grandezza $n = 3$.
 
-Idea parallela: i confrontatori che agiscono su fili diversi vengono messi in un passo parallelo. In quello da 4 elementi ho $T(n) = \#"step"$ e $p(n) = 4$.
+#v(12pt)
 
-Una rete di confrontatori la indichiamo con $R(x_1, dots, x_n) = (y_1, dots, y_n)$
+#figure(image("assets/02_esempio-rete-3.svg", width: 70%))
 
-Si dice che $R$ è una sorting network se e solo se $ forall (x_1, dots, x_n) in NN^n quad R(x_1, dots, x_n) = (y_1, dots, y_n) $ con $ y_1 < dots < y_n $
+#v(12pt)
 
-Sono anche dette reti di ordinamento test/swap oblivious (confronti non dipendono dall'input ma sono fissati a priori)
+Mentre qua sotto vediamo un esempio di sorting network per input di grandezza $n = 4$.
 
-Ci chiediamo se $R$ sia una sorting network. Per saperlo usiamo il principio $0-1$ (zero uno, knuth nel 1972)
+#v(12pt)
 
-Formalmente, $ forall x in {0,1}^n quad R(x) "ordinato" arrow.long forall y in NN^n quad R(y) "ordinato" $
+#figure(image("assets/02_esempio-rete-4.svg", width: 70%))
 
-Se vale un booleano vale anche per tutti gli altro
+#v(12pt)
 
-Vale anche esiste + non ordinato implica esiste + non ordinato
+L'idea per un algoritmo parallelo è quella di raggruppare, in un passo, i confrontatori che agiscono su fili diversi, così da evitare accessi concorrenti allo stesso dato e controlli complicati.
 
-Introduciamo uno strumento: f-shift su $R$
+Una *rete di confrontatori* la indichiamo con $ R(x_1, dots, x_n) = (y_1, dots, y_n) . $
 
-Abbiamo una rete $R$ e una funzione $f$. Prima applico f e poi R, oppure prima R e poi f, ovvero $ R(f(x_1), dots, f(x_n)) = f(R(x_1, dots, x_n)) = (f(y_1), dots, f(y_n)) $
+La rete $R$ è una *sorting network* se e solo se $ forall (x_1, dots, x_n) in NN^n quad R(x_1, dots, x_n) = (y_1, dots, y_n) $ con $ y_1 < dots < y_n . $
 
-Per essere vero $f$ deve essere monotona crescente, perché i confrontatori trovano minimo e massimo e f non cambia niente
+Queste reti sono anche dette *reti di ordinamento test/swap oblivious*. Quest'ultimo aggettivo deriva dal fatto che i confronti non dipendono dall'input dato, ma sono fissati a priori.
+
+Per sapere se una rete di confrontatori $R$ è una sorting network possiamo utilizzare il *principio 01*, ideato da *Donald Knuth* (_mio fratello_) nel $1972$.
+
+#theorem([Principio 01])[
+  Vale $ forall x in {0,1}^n space R "ordina" x arrow.long forall y in NN^n space R "ordina" y . $
+]
+
+In poche parole, se riesco ad ordinare ogni possibile vettore booleano allora riesco ad ordinare ogni possibile vettore intero. Questo è comodo perché i vettori booleani sono molto meno di quelli interi.
+
+Molto comoda anche l'implicazione inversa, ovvero $ exists y in NN^n bar.v R "non ordina" y arrow.long.double exists x in {0,1}^n bar.v R "non ordina" x . $
+
+Una cosa molto comoda dei confrontatori è inoltre la *linearità* rispetto ad una funzione $f$. Spieghiamo meglio: sia $f$ una *funzione monotona crescente*. Allora $ R(f(x_1), dots, f(x_n)) = f(R(x_1, dots, x_n)) = (f(y_1), dots, f(y_n)) . $
+
+Questo strumento è detto *f-shift* su $R$. Cosa abbiamo mostrato? Abbiamo fatto vedere che:
+- applicare $R$ ad $x$ e poi applicare $f$ OPPURE
+- applicare $f$ ad $x$ e poi applicare $R$
+mi genera lo stesso risultato.
 
 #theorem()[
-  Se $R$ non corretta esiste $x in NN^n$ tale che $R(x)$ non ordina, quindi esistono $k,s$ tali che $y_k > y_s$ ma $k < s$
+  Se $R$ è una rete non corretta allora $ exists x in NN^n bar.v R "non ordina" x . $
+
+  In poche parole, esistono due indici $t,s$ tali che $ y_t > y_s and t < s . $
 ]
 
 #proof()[
-  Definiamo $g = NN arrow.long {0,1} = cases(1 "se" x gt.eq y_k, 0 "altrimenti")$
+  Definiamo la funzione $g : NN arrow.long {0,1}$ tale che $ g(x) = cases(1 & "se" x gt.eq y_t, 0 quad & "altrimenti") . $
 
-  Vediamo come sia monotona crescente
+  Questa funzione è monotona crescente: vale $0$ fino a $y_t$ (_escluso_) poi vale $1$ dai valori successivi.
 
-  Ora applico $f$ a $R$ e ottengo $ R(g(x_1), dots, g(x_n)) $ ma per la regola dello shift questa cosa è uguale a $ (g(y_1), dots, g(y_n)) $ vettore binario che non è ordinato perché $g(y_k)$ vale $1$ mentre in $g(y_s)$ vale 0 perché più piccolo.
+  Vado ad applicare $g$ alla rete $R$ ottenendo $ R(g(x_1), dots, g(x_n)) . $
 
-  Ma allora non ho ordinato
+  Per la regola dello shift questa quantità è $ (g(y_1), dots, g(y_n)) . $
+
+  Questo vettore binario non è ordinato perché $g(y_t) = 1$ mentre $g(y_s) = 0$. Ma allora la rete $R$ non ha ordinato la nostra sequenza.
 ]
-
-Per testare una R e capire se è sorting network mi basta valutare $R$ solo su input binari, molto più facile da fare
