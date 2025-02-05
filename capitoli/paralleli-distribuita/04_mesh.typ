@@ -20,121 +20,104 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Architettura MESH
 
-Usate dai supercomputer, array bidimensionale ovvero griglia di processori
+Le *MESH* sono un'architettura parallela a memoria distribuita che rappresenta i processori come un array bidimensionale a griglia. Avendo a disposizione $n$ processori, la MESH è un quadrato $m times m$ con $m = sqrt(n)$. Se $n$ non è un quadrato perfetto allora prendiamo $m = (floor(sqrt(n)) + 1)^2$, che per $n gt.eq 6$ ci dà un valore $lt.eq 2n$, che ci va molto bene.
 
-Avendo $n$ processori abbiamo un quadrato $m times m$ con $m = sqrt(n)$ disposti come una matrice. Se $n$ non è un quadrato perfetto prendiamo $ (floor(sqrt(n)) + 1)^2 lt.eq 2n $ per $n gt.eq 6$ quindi va bene lo stesso
+I *parametri* di rete di questa architettura sono:
+- *grado* $gamma = 4$;
+- *diametro* $delta = 2 sqrt(n)$
+- *ampiezza di bisezione* $beta tilde sqrt(n)$ in base alla parità di $m$.
 
-Parametri di rete:
-- $gamma = 4$ (secondo lei è $rho$)
-- $delta = 2 sqrt(n)$ perché devo fare la scala
-- $beta tilde sqrt(n)$ (due diversi tagli)
+#v(12pt)
 
-I nostri lower bound diventano $Omega(sqrt(n))$ per max e $Omega(sqrt(n))$ per l'ordinamento, quindi tanta roba
+#figure(image("assets/04_mesh.svg", width: 50%))
 
-Vediamo il massimo: idea immediata se usiamo la mesh come array lineare di $n$ processori, facendo tipo serpentello, ma si ottiene $Omega(n)$ per il tempo contro $Omega(sqrt(n))$ che abbiamo adesso in una mesh
+#v(12pt)
 
-Pensiamo ad un algoritmo righe-colonna, ovvero non penso al serpentello ma anche ad alte connessioni. Ogni riga è un array lineare di $sqrt(n)$ processori, in più anche l'ultima colonna è un array lineare di $sqrt(n)$ processori. Sposto i massimi di ogni riga in fondo e poi max dei massimi.
+I nostri lower bound diventano:
+- $Omega(sqrt(n))$ per *Max*;
+- $Omega(sqrt(n))$ per *Ordinamento*.
+
+== Max
+
+L'idea per un algoritmo parallelo è quella di usare la MESH come se fosse un array lineare, andando _"a serpentello"_ nelle varie celle, ma un array lineare ha come tempo minimo $n$ e noi invece abbiamo $sqrt(n)$, quindi questa idea è cestinata immediatamente.
+
+Usiamo un algoritmo *righe-colonna*: abbiamo a disposizione tante connessioni, perché non usarle?
+
+Consideriamo ogni riga della MESH come se fosse un array lineare di $sqrt(n)$ processori. Il massimo di ogni riga verrà messo nell'ultimo processore, e sulla colonna formata dai _"processori massimi"_ eseguiamo ancora un'esecuzione di Max su array lineari.
 
 #align(center)[
-  #pseudocode-list()[
-    + $m = sqrt(n)$
+  #pseudocode-list(title: [*Max righe-colonna*])[
     + for $i = 1$ to $m$ par do
-      + MAX(Pi1, Pi2, dots, Pim)
-      - in Pim ho il massimo ora
-    + MAX(P1m, P2m, dots, Pmm)
+      + $"Max"(P_(i 1), dots, P_(i m))$
+    + $"Max"(P_(1 m), dots, P_(m m))$
   ]
 ]
 
-Tempo per la parte 1 è $sqrt(n)$, idem per la seconda parte, quindi eseguo in tempo $O(sqrt(n))$ quindi siamo soddisfatti. Efficienza purtroppo è $ frac(n, n sqrt(n)) arrow.long 0 $ quindi riduciamo i processori
+Il tempo, per entrambe le parti, è $T(n,p(n)) = O(sqrt(n))$. L'efficienza purtroppo è $ E = frac(n, n sqrt(n)) arrow.long 0 . $
 
-Passiamo da $n$ a $p$, ma andiamo avanti prossima volta
+Riduciamo il numero di processori con il *principio di Wyllie* da $n$ a $p$, dove ognuno di questi calcola il massimo di $n/p$ dati in tempo $O(n/p)$. Poi, si attiva l'algoritmo di prima sulla MESH $sqrt(p) times sqrt(p)$, che viene eseguito però in un tempo minore, ovvero $T(n,p(n)) = O(sqrt(p))$.
 
-Riprendiamo ancora la mesh
+Il tempo totale di questo nuovo algoritmo è è $T(n,p(n)) = n/p + sqrt(p)$. L'efficienza vale $ E = frac(n, p (n/p + sqrt(p))) = frac(n, n + underbracket(p sqrt(p), n)) = C eq.not 0 . $
 
-Riduciamo i processori da $n$ a $p$, ogni processore calcola il max tra $n/p$ dati in tempo $O(n/p)$. Poi, si attiva l'algoritmo di prima sulla griglia $sqrt(p) times sqrt(p)$, che viene eseguito però in $O(sqrt(p))$
+Per avere questa efficienza scelgo $p sqrt(p) = n$, ovvero $p = n^(2/3)$.
 
-Il tempo totale è $T = n/p + sqrt(p)$
+Con questa scelta di $p$ il tempo totale diventa $T(n,p(n)) = O(root(3,x))$. E questo valore è ottimo: usando una MESH di dimensione $sqrt(p)$ il limite teorico per Max è $sqrt(p) = sqrt(n^(2/3)) = root(3,x)$, che è esattamente il valore che abbiamo ottenuto noi, quindi siamo soddisfatti.
 
-Il denominatore invece è $ p (n/p + sqrt(p)) = n + p^(3/2) $
+== Ordinamento
 
-Vogliamo un denominatore $n$ per avere una costante per l'efficienza, quindi scelgo $p^(3/2) = n$ ovvero $ p = n^(2/3) $
+L'algoritmo di *ordinamento LS3* deve il suo nome a due ricercatori degli anni $'80$.
 
-Il tempo totale diventa quindi $ n/p + sqrt(p) = n^(1 - 2/3) + sqrt(n^(2/3)) = n^(1/3) + n^(1/2 dot 2/3) = root(3,x) + root(3,x) = O(root(3,x)) $
+L'algoritmo che utilizziamo è ricorsivo con *Divide et Impera*
 
-Otteniamo efficienza ok
-
-Limite teorico dobbiamo rifare i conti: con $sqrt(p)$ il limite è $Omega(sqrt(p))$ quindi $Omega(root(3,n))$ ma noi siamo esattamente qua quindi tanta tanta roba
-
-== Ordinamento LS3
-
-Ricercatori anni 80
-
-Ricorsivo con divide et impera. Non ordiniamo più a serpente.
-
-Sia $M$ il quadrato dei processori:
-- dividi: divido in 4 quadrati $M_1, M_2, M_3, M_4$ sx alto dx alto sx basso dx basso (italiano) di dimensione $m/2$ con $m = sqrt(n)$
-- ordina: faccio l'ordinamento a serpente in parallelo
-- fondi: mi arrivano 4 matrici, le fondo dando la matrice totalmente ordinata
-
-Vediamo LS3 parallelo
+Sia $M$ il quadrato dei processori. L'algoritmo procede come segue:
+- *dividi*: $M$ viene diviso in 4 quadrati $M_1 bar.v M_2 bar.v M_3 bar.v M_4$ di dimensione $m/2$ con $m = sqrt(n)$. Questi sono ottenuti da $M$ dividendolo come se fossero i quadranti di un piano cartesiano, ovvero $ mat(M_1, M_2; M_3, M_4) ; $
+- *ordina*: i quadrati $M_i$ vengono ordinati _"a serpentello"_ in parallelo;
+- *fondi*: i quadrati $M_i$ vengono rimessi nelle loro posizioni originali.
 
 #align(center)[
-  #pseudocode-list(title: [LS3sort])[
+  #pseudocode-list(title: [*LS3sort*])[
     + if $abs(M) == 1$
       + return $M$
-    + LS3sort(M_1)
-    + LS3sort(M_2)
-    + LS3sort(M_3)
-    + LS3sort(M_4)
-    + LS3merge(...)
+    + else
+      + $"LS3sort"(M_1)$
+      + $"LS3sort"(M_2)$
+      + $"LS3sort"(M_3)$
+      + $"LS3sort"(M_4)$
+      + $"LS3merge"(M_1, M_2, M_3, M_4)$
   ]
 ]
 
-Ci serve vedere anche la merge
+Per implementare questo algoritmo ci servono shuffle e ODD/EVEN.
 
-Ci servono shuffle e odd/even. Data una riga i della mesh, essa è un array lineare di processori. Su questa riga facciamo lo shuffle. Lo shuffle viene fatto su M, formato dalle matrici M_k ordinate. Quindi lo shuffle viene fatto sulla riga di $M$.
+Data una riga $i$ della MESH, essa è un *array lineare* di processori. Su questa riga eseguiamo lo *shuffle*. Questa operazione alterna elementi della matrice $M_1$ con elementi della matrice $M_2$ (_sopra_) ed elementi della matrice $M_3$ con elementi della matrice $M_4$ (_sotto_).
 
-Lo shuffle intramezzava prima metà con la seconda metà, cioè metteva vicini gli elementi con lo stesso indice delle due righe della matrice.
-
-Dopo lo shuffle devo eseguire ODD-EVEN tra due colonne adiacenti i e i+1. Vogliamo vederlo come array lineare: lo costruiamo a serpente. Su questo facciamo ODD-EVEN quindi ordiniamo, sono $2 sqrt(n)$ e quindi avremo quel numero di round
+Dopo lo shuffle devo eseguire *ODD/EVEN* tra due colonne adiacenti $i$ e $i+1$. Prendiamo le due colonne assieme e creiamo un *array lineare* andando _"a serpentello"_. Il numero di round di questo algoritmo è uguale alla grandezza di questo array, che è $2 sqrt(n)$.
 
 #align(center)[
-  #pseudocode-list(title: [LS3merge])[
+  #pseudocode-list(title: [*LS3merge*])[
     + for $i = 1$ to $sqrt(n)$ par do
-      + SHUFFLE(i)
+      + $"SHUFFLE"(i)$
     + for $i = 1$ to $sqrt(n) / 2$ par do
-      + ODD-EVEN(2i-1, 2i)
-    + esegui i primi $2 sqrt(n)$ passi di ODD-EVEN sull'intera mesh a serpente
+      + $"OddEven"(2i-1, 2i)$
+    + Esegui i primi $2 sqrt(n)$ passi di ODD/EVEN sull'intera mesh a serpente
   ]
 ]
 
-Il tempo per sta roba è $O(sqrt(n))$ per lo shuffle, $O(sqrt(n))$ per ODD-EVEN, e ancora $O(sqrt(n))$ per l'ultima esecuzione, quindi il tempo per la merge è $T_m (n) = h sqrt(n)$
+Il tempo per questo algoritmo è:
+- $O(sqrt(n))$ per lo shuffle;
+- $O(sqrt(n))$ per ODD-EVEN;
+- $O(sqrt(n))$ per l'ultima esecuzione.
 
-Risolviamo l'equazione di ricorrenza per sto schifo: $ T(n) = cases(1 "se" n = 1, T(n/4) + h sqrt(n) "altrimenti") $
+Ma allora tempo totale della merge è $T_m (n) = h sqrt(n)$
 
-Ma allora $ T(n) = T(n/4) + h sqrt(n) = T(n/4^2) + h sqrt(n/4) + h sqrt(n) = T(n/4^3) + h sqrt(n/4^2) + h sqrt(n/4) + h sqrt(n) = dots = sum_(i=0)^(log_4(n) - 1) h sqrt(n/4^i) + 1 = h sqrt(n) sum_(i=0)^(log_4(n) - 1) sqrt(1/4^i) + 1 = h sqrt(n) sum_(i=0)^(log_2(n) / log_4(n) - 1) 1/2^i + 1 = h sqrt(n) sum_(i=0)^(log(n) / 2 - 1) (1/2)^i + 1 = h sqrt(n) (frac(1 - (1/2)^(log(n)/2 - 1 + 1), 1/2)) + 1 = 2 h sqrt(n) (1 - 1/sqrt(n)) + 1 = O(sqrt(n)) . $
+Risolviamo l'equazione di ricorrenza per sto schifo: $ T(n) = cases(1 & "se" n = 1, T(n/4) + h sqrt(n) quad & 6 "altrimenti") . $
 
-Se aggiungo un 4 ci esce $n sqrt(n)$ per il sequenziale (peggio del merge sort)
+Ma allora $ T(n) &= T(n/4) + h sqrt(n) = T(n/4^2) + h sqrt(n/4) + h sqrt(n) = T(n/4^3) + h sqrt(n/4^2) + h sqrt(n/4) + h sqrt(n) = \ &= "mi fermo quando" M_i "è grande 4" = \ &= sum_(i=0)^(log_4(n) - 1) h sqrt(n/4^i) + 1 = \ &= h sqrt(n) sum_(i=0)^(log_4(n) - 1) sqrt(1/4^i) + 1 = \ &= h sqrt(n) sum_(i=0)^(frac(log_2(n),log_2(4)) - 1) 1/2^i + 1 = \ &= h sqrt(n) sum_(i=0)^(log(n) / 2 - 1) (1/2)^i + 1 = \ &= h sqrt(n) (frac(1 - (1/2)^(log(n)/2 - 1 + 1), 1/2)) + 1 = 2 h sqrt(n) (1 - 1/sqrt(n)) + 1 = O(sqrt(n)) . $
 
-Processori sono $p(n) = n$ e il tempo è $T(n) = O(sqrt(n))$ quindi $ E = frac(n log(n), n sqrt(n)) arrow.long 0 $ che non ci piace
+Nel caso sequenziale, aggiungendo un $4$ all'equazione di ricorrenza, otteniamo tempo $T(n) = n sqrt(n)$, un tempo peggiore del merge sort.
 
-Possiamo migliorare riducendo i processori, ma non lo vedremo
+Per il caso parallelo, abbiamo $p(n) = n$ processori con tempo $T(n,p(n)) = O(sqrt(n))$. L'efficienza è $ E = frac(n log(n), n sqrt(n)) arrow.long 0 . $
 
-Con una versione del bitonic sort su mesh usa processori $O(log^2(n))$ e tempo $T(n) = O(n / log(n))$ che è efficiente, ma come tempo è peggiore di LS3.
+Non ci piace molto come valore, possiamo migliorare l'efficienza riducendo i processori, ma non lo vedremo. Non vedremo nemmeno una versione del bitonic sort (_bentornato tra noi_) su MESH che usa $p(n) = O(log^2(n))$ processori in tempo $T(n,p(n)) = O(n / log(n))$ con una buonissima efficienza, ma vediamo che come tempo è peggiore di LS3.
