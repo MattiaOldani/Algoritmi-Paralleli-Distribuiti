@@ -44,3 +44,50 @@
   )
   $desop(#x)$
 }
+
+#let valore(x) = {
+  let valoreop = math.class(
+    "unary",
+    "valore",
+  )
+  $valoreop(#x)$
+}
+
+#let rstato(x) = {
+  let rstatoop = math.class(
+    "unary",
+    "stato",
+  )
+  $rstatoop(#x)$
+}
+
+#let ruolo(x) = {
+  let ruoloop = math.class(
+    "unary",
+    "ruolo",
+  )
+  $ruoloop(#x)$
+}
+
+#let stato = $"STATO"$
+#let evento = $"EVENTO"$
+#let azione = $"AZIONE"$
+
+#let nin(x) = {
+  let ninop = math.class(
+    "unary",
+    $N_"in"$,
+  )
+  $ninop(#x)$
+}
+
+#let nout(x) = {
+  let nouop = math.class(
+    "unary",
+    $N_"out"$,
+  )
+  $nouop(#x)$
+}
+
+#let pinit = $P_"init"$
+#let pfinal = $P_"final"$
