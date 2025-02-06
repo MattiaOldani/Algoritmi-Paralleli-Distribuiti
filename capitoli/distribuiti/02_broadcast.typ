@@ -20,110 +20,147 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Broadcasting
 
-Usiamo due stati S = {iniziatore, inattivo}. Abbiamo Sinit = stati delle entità in C(0) e Sterm = stati delle entità in C(f)
+Per il problema *broadcasting* vogliamo spargere l'informazione presente in una entità in tutte le altre presenti nella rete.
 
-Pinit una entità tiene I: $ exists x in E bar.v "valore"(x) and forall y eq.not x quad "valore"(y) = emptyset.rev $
+Definiamo $pinit$ la proprietà che indica che una sola entità contiene l'informazione $I$: $ exists x in E bar.v valore(x) = I \ and \ forall y eq.not x in E quad space valore(y) = emptyset.rev . $
 
-Pfinal: tutte le entità ce l'hanno, ovvero $ forall x in E quad "valore"(x) = I $
+Definiamo anche $pfinal$ la proprietà che indica che tutte le entità contengono l'informazione $I$: $ forall x in E quad valore(x) = I . $
 
 == Prima versione
 
-// FOTO DEL PROTOLLO
+Vediamo una prima versione del *PROTOLLO* per broadcast.
 
-S = {iniziatore, inattivo}, Sinit = {iniziatore, inattivo} e Sfinal = {inattivo}
+#v(12pt)
 
-Iniziatore, se ricevo impulso spontaneo
-- send(M) to N(x)
-- become inattivo
+#figure(image("assets/02_protollo.png", width: 50%))
 
-Inattivo, se ricevo M
-- processa M (preleva informazione e mettila in valore)
-- send(M) to N(x)
+#v(12pt)
 
-Il messaggio è $M = (t, o, d, I)$ con $t$ tipologia del mex, o e d sono origine e destinatario, I informazione
+Per questo protollo andiamo ad usare:
+- *stati* $S = {"iniziatore", "inattivo"}$;
+- *stati iniziali* $sinit = {"iniziatore", "inattivo"}$;
+- *stati terminali* $sterm = {"inattivo"}$.
 
-Abbiamo un problema
+Definiamo anche le *regole* che devono seguire le nostre entità.
 
-Problema dell'altra volta: protocollo corretto ma non termina, perché dopo lo stato iniziale tutto diventa inattivo e gli inattivi ricevono, processano e mandano ancora in giro. Non funziona anche se modifichiamo imponendo di non mandare a chi me l'ha mandato.
+#align(center)[
+  #pseudocode-list(title: [*Iniziatore*])[
+    + Se riceve un impulso spontaneo
+      - $send(M)$ to $N(x)$
+      - become inattivo
+  ]
+]
 
-Infatti Futuro(t) non è mai il vuoto, la computazione non termina
+#align(center)[
+  #pseudocode-list(title: [*Inattivo*])[
+    + Se riceve $M$
+      - processa $M$ (_preleva le informazioni_)
+      - $send(M)$ to $N(x)$
+  ]
+]
 
-Modifichiamo gli stati: Sstart subset Sinit stati che fanno iniziare il protocollo, mentre Sfinal subset Sterm stati per cui la sola azione possibile è quella nulla
+Il messaggio è nella forma $ M = (t, o, d, I), $ formato dai campi:
+- $t$ *tipologia* del messaggio;
+- $o$ e $d$ entità *origine* e entità *destinatario*;
+- $I$ *informazione*.
 
-Abbiamo ora Sinit = {iniziatore, inattivo}, Sstart = {iniziatore}, Sterm e Sfinal = {inattivo}
+Questa prima versione ha un problema: *non termina mai*. Infatti, ogni stato diventa inattivo dopo l'impulso iniziale e questi, ogni volta che ricevono qualcosa, anche se già ce l'hanno, la mandano ai loro vicini. Vediamo alcune modifiche che possiamo fare.
 
-Grazie a questo stato il protocollo termina
+Imporre di non mandare il messaggio a chi ce l'ha mandato non modifica il comportamento.
 
-La soluzione per $P$ è tale che $ forall C(0) in "Pinit" quad exists t' bar.v forall t > t' quad C(t) in "Pfinal" ("correttezza") $ e anche $ forall x in E quad "stato"_t  (x) in "Sfinal" ("terminazione") $
+Per rendere $futuro(t)$ vuoto ad un certo punto, modifichiamo gli stati:
+- definiamo $sstart subset.eq sinit$ insieme degli stati che fanno iniziare il protollo;
+- definiamo $sfinal subset.eq sterm$ insiemi degli stati che eseguono solo l'azione nulla.
+
+I nostri *stati* ora diventano:
+- $sinit = {"iniziatore", "inattivo"}$;
+- $sstart = {"iniziatore"}$;
+- $sterm = sfinal = {"finito"}$.
+
+Con questo nuovo stato terminale riusciamo a far terminare la computazione.
+
+La soluzione che abbiamo costruito è *corretta* e *termina*. Cosa vogliono dire questi due termini?
+
+Un problema è *corretto* se $ forall C(0) in pinit quad exists t' bar.v forall t > t' quad C(t) in pfinal $ ovvero ogni configurazione iniziale che rispetta i propri predicati, da un certo $t$ in poi, finisce in una configurazione finale che rispetta i propri predicati.
+
+Un problema *termina* se $ exists t bar.v forall x in E quad rstatot(x,t) in sfinal $ ovvero esiste un istante di tempo nel quale tutte le entità sono in uno stato finale.
 
 == Seconda versione [flooding]
 
-Abbiamo S = {iniziatore, inattivo, finito}, Sstart = {iniziatore}, Sfinal = {finito}
+Una versione migliore sfrutta la tecnica del *flooding*.
 
-Abbiamo iniziatore con impulso spontaneo
-- send(M) to N(x)
-- become finito
+Abbiamo a disposizione i seguenti *stati*:
+- $S = {"iniziatore", "inattivo", "finito"}$;
+- $sstart = {"iniziatore"}$;
+- $sinit = {"iniziatore", "inattivo"}$;
+- $sfinal = sterm = {"finito"}$.
 
-Abbiamo inattivo con ricezione di M
-- processa M
-- send M to N(x)-sender
-- become finito
+#align(center)[
+  #pseudocode-list(title: [*Iniziatore*])[
+    + Se riceve impulso spontaneo
+      - $send(M)$ to $N(x)$
+      - become finito
+  ]
+]
 
-Le coppie stato x evento non indicano fanno nil
+#align(center)[
+  #pseudocode-list(title: [*Inattivo*])[
+    + Se riceve $M$
+      - processa $M$ (_preleva le informazioni_)
+      - $send(M)$ to $N(x) - {sender}$
+      - become finito
+  ]
+]
 
-Vediamo la complessità:
-- M[F] = $sum_(x in E) (N(x) - 1) + underbracket(1, "iniziatore") = 2m - n + 1$
-- T[F] $lt.eq d$ diametro della rete
+Non l'abbiamo detto, ma le regole sono delle *funzioni totali*: infatti, se non definiamo un'azione per una coppia stato+evento allora la funzione di default esegue *nil*.
 
-Abbiamo anche lower bound:
-- T[broadcast / RI] gt.eq d, tempo causale (caso peggiore)
-- M[broadcast / RI] gt.eq m per un teorema
+Il *numero di messaggi* è $ M["flooding"] = sum_(x in E) (N(x) - 1) + underbracket(quad 1 quad, "iniziatore") = 2m - n + 1 . $
 
-Il protocollo è ottimale
+Il *tempo* impiegato è $ T["flooding"] lt.eq d $ perché nel caso peggiore l'iniziatore è nel nodo che definisce il diametro della rete.
+
+Abbiamo anche dei *lower bound* per questo problema.
 
 #theorem()[
-  M[broadcast / RI] gt.eq m
+  Vale $ M["broadcast" slash "RI"] gt.eq m . $
 ]
 
 #proof()[
-  Per assurdo, risolvo il problema con meno di m messaggi. Sia $A$ il protocollo che non manda messaggi su $(x,y)$. $A$ è corretto e deve lavorare bene su ogni $G$, quindi anche $G'$ ottenuto da $G$ mettendo un nuovo nodo $z$ non iniziatore, tolgo arco xy e aggiungo xz e zy con $ lambda_x (x,z) = lambda_x (x,y) $ e $ lambda_y (y,z) = lambda_y (y,x) $
+  Supponiamo per assurdo di poter risolvere broadcast con meno di $m$ messaggi totali. Sia $A$ questo protollo. Supponiamo che $A$ non mandi mai messaggi sull'arco $(x,y)$ del grafo $G$.
 
-  Se eseguo $A$ su $G'$ allora $z$ non riceve mai il messaggio $I$ quindi $A$ non è corretto.
+  Il protollo $A$ è corretto, quindi lavora bene su ogni grafo. Creiamo $G'$ a partire da $G$:
+  - aggiungendo un nodo $z$ non iniziatore;
+  - togliendo l'arco $(x,y)$;
+  - aggiungendo gli archi $(x,z)$ e $(z,y)$ con etichette $lambda_x (x,z) = lambda_x (x,y)$ e $lambda_y (y,z) = lambda_y (y,x)$.
+
+  Se eseguo $A$ su $G'$ allora $z$ non riceve mai il messaggio $I$, quindi $A$ non è corretto.
 ]
+
+Il tempo invece ha il seguente lower bound: $ T["broadcast" slash "RI"] gt.eq d . $ Questo è il *tempo causale*, ovvero il tempo nel caso peggiore.
+
+Visti questi risultati, il protollo che abbiamo costruito è ottimale.
 
 == Problema wake-up
 
-Broadcast parto da una e mando a tutti, in wake-up è generale, ho tot entità attive che devono mandare. Rilassiamo il vincolo unico iniziatore quindi.
+Il problema del *wake-up* è una versione generale del broadcast: in quest'ultimo partiamo con l'informazione in una sola entità, nel wake-up rilassiamo il vincolo di avere un unico iniziatore.
 
-Protocollo wFlood, ho S = {dormiente, attivo}, Sinit = Sstart = {dormiente}, Sterm = Sfinal = {attivo}
+Useremo il protocollo *w-flood*, che utilizza i seguenti *stati*:
+- $S = {"dormiente", "attivo"}$;
+- $sinit = sstart {"dormiente"}$;
+- $sfinal = sterm = {"attivo"}$.
 
-Se dormiente e impulso spontaneo faccio
-- send(W) to N(x)
-- become attivo
+Vediamo le *regole* per questa versione rilassata di broadcast.
 
-Se dormiente e ricevo W
-- send(W) to N(X) - sender
-- become attivo
+#align(center)[
+  #pseudocode-list(title: [*Dormiente*])[
+    + Se riceve impulso spontaneo
+      - $send(W)$ to $N(x)$
+      - become attivo
+    + Se riceve $W$
+      - $send(W)$ to $N(x) - sender$
+      - become attivo
+  ]
+]
 
-Il resto è nil
-
-Costi di sta roba:
-- T[wFlood] lt.eq d
-- 2m - n + 1 lt.eq M[wFlood] lt.eq 2m (1 entità e tutte le entità)
+Come prima, il *tempo* impiegato è $ T["w-flooding"] lt.eq d , $ mentre il *numero di messaggi* spediti è $ underbracket(2m - n + 1, "un iniziatore") lt.eq M["w-flooding"] lt.eq underbracket(quad 2m quad, n "iniziatori") . $

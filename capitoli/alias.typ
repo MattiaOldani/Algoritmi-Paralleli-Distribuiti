@@ -61,6 +61,14 @@
   $rstatoop(#x)$
 }
 
+#let rstatot(x, tempo) = {
+  let rstatotop = math.class(
+    "unary",
+    "stato",
+  )
+  $rstatotop_(#tempo)(#x)$
+}
+
 #let ruolo(x) = {
   let ruoloop = math.class(
     "unary",
@@ -91,3 +99,27 @@
 
 #let pinit = $P_"init"$
 #let pfinal = $P_"final"$
+
+#let futuro(x) = {
+  let futuroop = math.class(
+    "unary",
+    "futuro",
+  )
+  $futuroop(#x)$
+}
+
+#let sinit = $S_"init"$
+#let sterm = $S_"term"$
+
+#let send(x) = {
+  let sendop = math.class(
+    "unary",
+    "send",
+  )
+  $sendop(#x)$
+}
+
+#let sstart = $S_"start"$
+#let sfinal = $S_"final"$
+
+#let sender = $"sender"$
