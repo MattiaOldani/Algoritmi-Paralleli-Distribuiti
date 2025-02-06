@@ -37,43 +37,15 @@
 
 = Broadcasting
 
+Usiamo due stati S = {iniziatore, inattivo}. Abbiamo Sinit = stati delle entità in C(0) e Sterm = stati delle entità in C(f)
+
 Pinit una entità tiene I: $ exists x in E bar.v "valore"(x) and forall y eq.not x quad "valore"(y) = emptyset.rev $
 
 Pfinal: tutte le entità ce l'hanno, ovvero $ forall x in E quad "valore"(x) = I $
 
-Le restrizioni sono:
-- link bidirezionali BL
-- affidabilità totale TR (total reliability)
-- connettività CN
-- queste tre sono R
-- unico iniziatore UI (parte solo il primo che contiene x, detta I sta cosa)
-
-Tutto detto RI
-
-Vediamo un algoritmo distribuito / protollo
-
-Diamo l'insieme di regole stato times evento --> azione:
-- stato_t(x) stato di x al tempo t
-- evento è impulso spontaneo, sveglia o messaggio
-- azione è mini programma indivisibile
-
-L'esecuzione di un protocollo genera una sequenza di configurazioni successive del sistema
-
-Sia $sum(t)$ il contenuto dei registri delle entità al tempo $t$, sia futuro(t) eventi già generati al tempo $t$ ma che non sono ancora processati
-
-Indichiamo con $C(t)$ la configurazione del sistema del tempo $t$, definita dalla coppia $sum(t), "futuro"(t)$
-
-Definiamo $C(0) = (Sigma(0), "Futuro"(0))$ registri inizializzati + impulso spontaneo
-
-L'esecuzione del protocollo è una sequenza di configurazioni successive tale che $C(0)$ a $C(f)$ con il protocollo
-
-Quando una C soddisfa P lo scriviamo con $C in P$
-
-Dobbiamo definire come un protocollo risolve un problema (definita dalla tripla)
-
-Usiamo due stati S = {iniziatore, inattivo}. Abbiamo Sinit = stati delle entità in C(0) e Sterm = stati delle entità in C(f)
-
 == Prima versione
+
+// FOTO DEL PROTOLLO
 
 S = {iniziatore, inattivo}, Sinit = {iniziatore, inattivo} e Sfinal = {inattivo}
 
@@ -121,13 +93,13 @@ Vediamo la complessità:
 - T[F] $lt.eq d$ diametro della rete
 
 Abbiamo anche lower bound:
-- T[broacast / RI] gt.eq d, tempo causale (caso peggiore)
-- M[broacast / RI] gt.eq m per un teorema
+- T[broadcast / RI] gt.eq d, tempo causale (caso peggiore)
+- M[broadcast / RI] gt.eq m per un teorema
 
 Il protocollo è ottimale
 
 #theorem()[
-  M[broacast / RI] gt.eq m
+  M[broadcast / RI] gt.eq m
 ]
 
 #proof()[
@@ -138,7 +110,7 @@ Il protocollo è ottimale
 
 == Problema wake-up
 
-Broacast parto da una e mando a tutti, in wake-up è generale, ho tot entità attive che devono mandare. Rilassiamo il vincolo unico iniziatore quindi.
+Broadcast parto da una e mando a tutti, in wake-up è generale, ho tot entità attive che devono mandare. Rilassiamo il vincolo unico iniziatore quindi.
 
 Protocollo wFlood, ho S = {dormiente, attivo}, Sinit = Sstart = {dormiente}, Sterm = Sfinal = {attivo}
 

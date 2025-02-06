@@ -88,3 +88,21 @@ Definiamo quello che è un problema. Un *problema* è una tripla $ angle.l pinit
 L'insieme $pinit$ contiene tutti i valori iniziali di stato che possiamo trovare nel sistema al suo avvio, ovvero abbiamo che $ forall x in E quad valore(x) in pinit . $
 
 Una definizione simile si può dare anche per $pfinal$.
+
+L'esecuzione di un protocollo genera una *sequenza di configurazioni* successive del sistema.
+
+Sia $Sigma(t)$ il contenuto dei registri delle entità al tempo $t$, e sia $futuro(t)$ l'insieme degli eventi già generati al tempo $t$ ma che non sono ancora stati processati.
+
+Indichiamo con $C(t)$ la *configurazione del sistema* del tempo $t$, definita dalla coppia $ (Sigma(t), futuro(t)) . $
+
+Definiamo $ C(0) = (Sigma(0), futuro(0)) $ la *configurazione iniziale* che contiene i registri inizializzati e l'impulso spontaneo. Parallelamente, si può definire $C(f)$ come la *configurazione finale*.
+
+Dentro $C(0)$ troveremo tutti gli stati presenti in $sinit$, insieme degli stati che troviamo all'avvio, mentre dentro $C(f)$ troveremo tutti gli stati presenti in $sterm$, insieme degli stati che troviamo alla fine.
+
+Per finire, definiamo quali saranno le restrizioni che useremo praticamente sempre:
+- link bidirezionali *BL*;
+- affidabilità totale *TR* (_total reliability_);
+- connettività *CN*;
+- unico iniziatore *UI*.
+
+Le prime tre restrizioni vengono indicate con *R*, l'ultima con *I*. La loro unione dà la restrizione *RI*.
