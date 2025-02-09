@@ -20,140 +20,108 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Election
 
-Rompere la simmetria
+Il problema *election* vuole rompere la simmetria: dobbiamo individuare una entità tra tanta autonome e omogenee che diventi *leader*, rendendo le altre *follower*.
 
-Individuare una entità specifica tra tante autonome e omogenee. Tale è leader e le altre sono follower. Applicazioni: per certi lavori serve una unità centrale che diventi coordinatrice per le altre entità.
-
-Risultato di impossibilità
-
-#lemma()[
-  Impossibile deterministicamente individuare un leader sotto le restrizioni R
+#lemma([Risultato di impossibilità])[
+  È impossibile individuare deterministicamente un leader sotto le restrizioni R.
 ]
 
 #proof()[
-  Idea della prova: siano $x,t in E$ omogenee. Esse sono nello stato e inizializzate nello stesso modo. Eseguono stesso algoritmo e sono ancora in simmetria. Ma allora non ho trovato un leader.
+  Idea della dimostrazione: siano $x,y in E$ due entità omogenee inizializzate nello stesso modo e nello stesso stato. Essendo identiche, eseguono anche lo stesso algoritmo, trovandosi poi in uno stato finale uguale. Ma allora non ho trovato un leader.
 ]
 
-Risultato di possibilità
-
-#lemma()[
-  Sotto RI la starting entità diventa subito leader, il problema però è risolto dall'esterno e non dal sistema
+#lemma([Risultato di possibilità])[
+  Sotto le restrizioni RI l'entità di partenza diventa subito leader, ma il problema è risolto dall'esterno e non dal sistema.
 ]
 
-Nuova restrizione: initial distinct values (ID), con IR notazione R union {ID}, ovvero ho id(x) = nome di x o valore di x (si confonde)
+Aggiungiamo una nuova restrizione, la *initial distinct values*, denotata con *ID*. Se aggiunta alle restrizione R otteniamo le restrizioni *IR*. Questa restrizione aggiunge un campo $id(x)$ ad ogni entità.
 
-Strategia di soluzione:
-- elect minimum:
-  - trova id(x) minimo e fai x leader
-  - $forall y eq.not x in E quad y$ diventa follower
-- elect minimum initiator:
-  - trova id(x) minimo tra le sole entità initiator ed eleggi x leader
-  - same secondo punto
+Abbiamo possibili *strategie* di soluzione:
+- *elect minimum*: trova l'entità con $id(x)$ minimo la rende leader;
+- *elect minimum initiator*: trova l'entità initiator con $id(x)$ minimo e la rende leader.
 
-Primo risolviamo in una topologia ring, ad anello
+Risolveremo questo problema in una *topologia ring*, ovvero ad *anello*. In questa topologia le entità sono disposte ad anello, ovvero abbiamo $A = (x_0, dots, x_(n-1))$ con una connessione tra $x_(n-1)$ e $x_0$. Il numero di archi e il numero di entità sono uguali in questo caso.
 
-Topologia ring: le entità sono dispose ad anello, ovvero ho $A = (x_0, dots, x_(n-1))$ e questo ha $m = n$
+Aggiungiamo un'ulteriore restrizione, ovvero che ogni entità sa di essere in un ring.
 
-Aggiungiamo una restrizione, ovvero ogni entità x sa di essere in un ring
+Infine, da ora chiameremo OTHER la quantità $N(x) - sender$.
 
-Chiameremo per ora N(x)-sender come OTHER, perché ho solo un altro vicino se tolgo il sender
+== Prima versione
 
-Protocollo All the Way
+Una prima versione di protocollo per questo problema (_elect minimum_) è il protocollo *all the way*. I messaggi viaggiano intorno all'anello, inoltrati dalle varie entità in una direzione prestabilita. I messaggi mandati, per ora, sono nella forma (select, $id(x)$).
 
-I messaggi viaggiano intorno all'anello, inoltrati dalle entità nella stessa direzione. Messaggi sono ("elect", id(x), ...)
+Quando una entità $x$ riceve un messaggio $E$ dall'entità $y$ inoltra $E$ all'entità successiva, assieme ad un messaggio $E'$ con $id(x)$ al posto di $id(y)$.
 
-Quando x riceve E da y:
-- inoltra E
-- inoltra E' con id(x) al posto di id(y)
+Con questo continuo inoltro di messaggi, ogni entità $x$ vede il valore $id(y)$ di ogni entità $y$ e può così calcolarne il minimo.
 
-Questi verso OTHER
+Quando facciamo terminare ogni entità? Una prima idea è fermare $x$ quando si riceve un messaggio $E$ con il proprio $id(x)$. Siamo sicuri di aver finito? Rispondiamo:
+- *SI*: se supponiamo la restrizione *message ordering* (_prelevo FIFO_), ma noi non ce l'abbiamo;
+- *solo se ne ha visti* $bold(n)$ *diversi*: se supponiamo che le entità siano a conoscenza della dimensione dell'anello, ma noi non ce l'abbiamo;
+- *NO*: giusto, dobbiamo riempire in maniera opportuna i messaggi per far terminare correttamente le altre entità.
 
-Ogni entità x vede id(y) forall y eq.not x in E e può calcolare il minimo
+Quello che aggiungiamo al messaggio è un *contatore* che, partendo da $1$, viene continuamente incrementato ogni volta che una entità inoltra il messaggio. Quando il messaggio ritorna all'entità che ha generato il messaggio, essa saprà esattamente la dimensione della rete poiché contenuta dentro il contatore. Grazie a questa informazione, ora l'entità sa se può fermarsi e calcolare il minimo oppure aspettare ancora qualche messaggio mancante.
 
-Quando facciamo terminare le entità?
+Vediamo gli *stati* utilizzati da questo protocollo:
+- $S = {"asleep", "awake", "leader", "follower"}$;
+- $sinit = {"asleep"}$;
+- $sterm = {"leader", "follower"}$.
 
-Risposta parziale: una volta che x riceve un msg E con il proprio id(x) sa che E ha fatto il giro e quindi non lo inoltra più
+#align(center)[
+  #pseudocode-list(title: [*Asleep*])[
+    + Se riceve impulso spontaneo
+      - $"initialize"()$
+      - become awake
+    + Se riceve (elect, value, counter)
+      - $"initialize"()$
+      - $send(("elect", "value", "counter" + 1))$ to OTHER
+      - $min = min(min, "value")$
+      - count = count + $1$
+      - become awake
+  ]
+]
 
-Può terminare?
-- si: se supponiamo message ordering (prelevo sui link secondo FIFO, ma noi non ce l'abbiamo)
-- solo se ne ha visti n diversi: se si suppone che le entità siano a conoscenza della dimensione (ma noi non ce l'abbiamo)
-- no: giusto, dobbiamo riempire in maniera opportuna i msg E per far terminare correttamente le altre entità (un contatore)
+#align(center)[
+  #pseudocode-list(title: [*Awake*])[
+    + Se riceve (elect, value, counter)
+      - if value $eq.not id(x)$
+        - $send(("elect", "value", "counter" + 1))$ to OTHER
+        - $min = min(min, "value")$
+        - count = count + $1$
+        - if know == true
+          - $"check"()$
+      - else
+        - size = counter
+        - know = true
+        - $"check"()$
+  ]
+]
 
-Come usare il counter su E = (elect, id(x), counter)
-- inizio ho counter = 1 per x
-- ogni altra entità y diversa da x che inoltra E somma 1 a counter
-- quando E ritorna a X, il counter sarà uguale a n = abs(A)
-- se x ha ricevuto n diversi id può terminare
-- altrimenti aspetta, riceve altri messaggi e li inoltra, controlla per verificare se è arriva a n id diversi
+#align(center)[
+  #pseudocode-list(title: [*Procedura initialize*])[
+    + count = 0
+    + size = 1
+    + know = false
+    + $send(("elect", id(x), 1))$ to RIGHT
+    + $min = id(x)$
+  ]
+]
 
-Allora
-- stati {asleep, awake, leader, follower}
-- Sinit = {asleep}
-- Sterm = {leader, follower}
+#align(center)[
+  #pseudocode-list(title: [*Procedura check*])[
+    + if count == size
+      + if $min == id(x)$
+        + become leader
+      + else
+        + become follower
+  ]
+]
 
-Asleep
-- spontaneo
-  - initialize
-  - become awake
-- ricevono (elect, value, counter)
-  - initialize
-  - send (elect, value, counter + 1) to other
-  - min = Min{min, value}
-  - count = count + 1
-  - become awake
+Il *numero di messaggi* che vengono inviati con questo protocollo è $ M["all-the-way" slash "IR" union "RING"] = n^2 . $
 
-Procedura initialize
-- count = 0
-- size = 1
-- know = false
-- send(elect, id(x), size) to right
-- min = id(x)
+== Seconda versione
 
-Awake
-- ricevo (elect, value, counter)
-  - if value diverso id(x) then
-    - send (elect, value, counter + 1) to other
-    - min = Min{min, value}
-    - count = count + 1
-    - if know = true then check
-  - else
-    - size = counter
-    - know = true
-    - check
+Questa prima versione è troppo costosa, quindi passiamo al piano due: scegliamo elect minimum initiator come politica di ricerca. In questo caso, solo gli iniziatori spediscono un proprio messaggio $E$, tutte le altre entità inoltrano e basta. Quando gli initiator hanno finito il calcolo del leader, mandano un messaggio di fine a tutti gli altri. aggiungendo quindi $n$ messaggi finali.
 
-Procedura CHECK
-- if count == size then
-  - if min = id(x) then
-    - become leader
-  - else
-    - become follower
-
-Complessità
-- M[All the way / IR union Ring] = n^2
-
-Troppo costoso, vediamo versione due
-
-Solo gli initiator generano E, mentre le altre inoltrano e basta
-
-Problema di terminazione: da parte delle entità non initiator. Quando gli initiator hanno finito il calcolo del leader mandano messaggio di fine altri += n messaggi di fine
-
-Complessità:
-- M[Min] = nk + n dove k sono gli initiator
-- T[Min] lt.eq 3n - 1 perché vanno in parallelo, per il tempo consideriamo caso peggiore, ovvero solo 2 initiator si attivano (n per il ciclo del primo, n per il secondo, n per il check). Lo raggiungiamo con 2 bro che si svegliano in momenti diversi
+Il *numero di messaggi* diventa ora $n k + n$, con $k$ numero di initiator, mentre il *tempo* è $lt.eq 3n - 1$, che si raggiunge quando $2$ initiator si attivano in momenti diversi.
