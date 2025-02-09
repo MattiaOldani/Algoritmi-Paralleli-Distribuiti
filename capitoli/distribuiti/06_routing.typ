@@ -20,99 +20,53 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Routing
 
-Scopo: x vuole spedire messaggio a y, vuole cammino in G da x a y
+Vogliamo mandare un messaggio da $x$ a $y$ utilizzando il cammino minimo tra queste due entità. Il problema è che l'entità $x$ non conosce questo cammino minimo. Il problema del *routing* vuole risolvere le paturnie dell'entità $x$ così che possa fare sogni tranquilli.
 
-Problema shortest path: scopo determinare cammino migliore (di costo minimo) tra x e y in G
+Una soluzione è fare broadcast da $x$ del messaggio $E$, ma questo è totalmente inefficiente. Decidiamo quindi di scegliere uno tra tutti i possibili cammini tra $x$ e $y$ e, se questo è il migliore, siamo anche più contenti.
 
-Applicazioni: comunicazione, cruciale in una computazione di un sistema distribuito
+Visto che poi dobbiamo saperci spostare nella rete, dobbiamo salvare le informazioni sui costi della rete per ogni entità, così che possiamo calcolare i cammini minimi verso ogni entità.
 
-Per risolvere il primo basta fare broadcast da x del messaggio a tutte le y in E, ma totalmente inefficiente
+Le informazioni le salviamo nella *full routing table*, una tabella con le varie destinazioni sulle righe e path minimo + costo sulle colonne (_grazie *Rossi* che me le hai insegnate queste cose_).
 
-Scegliamo quindi un cammino tra i tanti possibili tra x e y. Ovviamente se è il migliore possibile lo preferiamo
+== Prima versione
 
-Secondo problema: richiede l'uso della memoria per registrare informazioni sui costi di G per ogni entità al fine di calcolare i cammini minimi verso ogni altra entità
+Sotto restrizioni IR, vediamo il protocollo *gossiping*. L'idea è che ogni entità si costruisce una mappa del grafo $G$, una matrice che è praticamente la matrice di adiacenza, e all'occorrenza si calcola le righe della full routing table.
 
-Shortest path
+Per costruire questa tabella, detta $mapg(G)$, che contiene i costi dei vari archi, ogni entità diffonde le proprie informazioni sui vicini ad ogni altra entità vicina.
 
-Mettiamo restrizioni IR. Le strategie differiscono dal tipo di info che le entità tengono in memoria.
+Vediamo cosa fa questo protocollo:
+- costruisce l'albero $T$ per il grafo $G$;
+- ogni entità diffonde le proprie informazioni a tutte le altre usando i link di $T$;
+- ogni entità acquisisce dai vicini $id(x)$ e costi dei vari link.
 
-Full routing table: ogni strategia alla fine ha bisogno di questa tabella per risolvere il problema
+Il numero di messaggi è:
+- $n^2$ per la comunicazione;
+- $m + n log(n)$ per la creazione dello spanning tree;
+- $2m$ per acquisire informazioni dai vicini;
+- $2m(n-1)$ per il broadcast delle informazioni su $T$.
 
-La tabella ha come righe le destination, mentre sulle colonne il path minimo e il costo (momento reti)
+In totale, il *numero di messaggi* è $approx 2 m n$, che vale $n^2$ quando $G$ è sparso. Il *tempo*, invece, è molto difficile da calcolare.
 
-Protocollo gossiping (tanta memoria)
+Vediamo come questo protocollo richieda tanta memoria per poter essere eseguito.
 
-Idea: ogni entità costruisce una mappa del sistema G, una matrice che è la matrice di adiacenza di G e all'occorrenza di calcola le righe della full routing table
+== Seconda versione
 
-Questa la chiamo MAP(G). Nella cella i,j ho peso arco i,j
+Il protocollo *iterated-construction* costruisce la FRT di ogni entità a più riprese senza usare $mapg(G)$. Infatti, all'inizio ogni FRT contiene solo le informazioni dei vicini. Inoltre, nella FRT possiamo evitare di tenere tutto il cammino minimo, ma possiamo limitarci a salvare quale nodo è il prossimo nel cammino. Definiamo inoltre il *distance vector* $V$ come la FRT ristretta alle colonne con solo destinazione e costo, senza path.
 
-Per costruire la MAP(G) in un distribuito ogni entità x diffonde le proprio informazioni sui vicini ad ogni altra y in E
+Cosa fa questo protocollo:
+- ogni entità diffonde la propria $V$ ai suoi vicini;
+- sulla base delle informazioni ricevute, ogni entità stabilisce se sono stati trovati cammini minimi migliori di quelli della propria FRT e in tal caso la aggiorna.
 
-Map-Gossip
-- costruzione di un albero T per G
-- ogni entità acquisice dai vicini id e i costi del link
-- ogni entità diffonde le sue informazioni a tutte le altre usando i link di T
+Il *numero di iterazioni* di questo protocollo è $n-1$, e si dimostra per induzione.
 
-Complessità:
-- comunicazione di $n^2$ messaggi
-  - spanning tree T è $O(m + n log(n))$ il migliore (non l'abbiamo visto)
-  - prendo info dai vicini $2m$
-  - broadcast delle info su T $2m(n-1)$
-- quindi M[Map-Gossip] circa 2 m n ovvero $O(n^2)$ se sparso, tempo difficile da calcolare
+Vediamo come fa $x$ ad individuare, ad ogni iterazione, il cammino minimo per un nodo $z$.
 
-Richiede tanta memoria
+Sia $V_y^i [z]$ il costo del cammino da $y$ a $z$ alla $i$-esima iterazione. Alla $(i+1)$-esima iterazione questo costo arriva ai vicini di $y$, e sia $x$ uno di questi. Esso calcola il valore $ w[z] = min_(y in N(x)) {theta.alt(x,y) + V_y^i [z]}, $ dove $theta.alt(x,y)$ rappresenta il costo del link $(x,y)$. Se $w[z] < V_x^i [z]$ allora $x$ sceglie $w[z]$ come costo per il path per $z$, aggiornando la FRT e memorizzando anche il vicino $y$ che ci ha dato l'informazione.
 
-Protocollo Iterated-Construction
+Vediamo come utilizziamo molta meno memoria della $mapg(G)$, perché i DV sono lineari.
 
-Strategia: ogni x costruisce la FRT a più riprese senza usare MAP
+Il *numero di messaggi* è $2m n (n-1)$, ovvero eseguo $n-1$ iterazioni dove mando $n$ volte il distance vector su $2m$ link del grafo. Il *tempo ideale* lo indichiamo con $tau(n)$, ed è tale che $ tau(n) = cases(O(1) & "se G consente messaggi lunghi", O(n) quad & "altrimenti") . $
 
-Inizialmente la FRT contiene info solo sui vicini, mentre i non vicini hanno infinito
-
-Notiamo che la FRT non deve contenere per forza l'intero shortest path per arrivare a z, basta sapere il vicino coinvolto nello shortest per z
-
-Ovvero $ forall z in E bar.v z eq.not x quad cases("costo dello SP per z", "primo link dello SP che si traduce in un nodo") $
-
-Definiamo il distance vector, ovvero la FRT ristretta alle colonne, con solo destination e cost. Indichiamo sta roba con V
-
-Con V[z] indichiamo il cammino minimo da x a z
-
-Iterazione:
-- ogni entità diffonde la propria V ai suoi vicini
-- sulla base delle info che gli arrivano dai vicini stabilisce se sono stati trovati cammini minimi migliori di quelli della propria FRT e in tal caso la aggiorna
-
-Il numero di iterazioni è $n-1$m si dimostra per induzione
-
-Come fa x ad individuare ad ogni iterazione il cammino minimo per arrivare a z?
-
-Sia $V_y^i[z]$ il costo del cammino da y a z alla i-esima iterazione. Alla i+1-esima questo costo arriva ai vicini di y.
-
-Sia x uno dei vicini, x si calcola, alla i-esima, $ w[z] = min_(y in N(x)) {theta.alt(x,y) + V_y^i[z]} $ dove theta è il costo del link x,y
-
-Se w[z] < V_x^i[z] allora x sceglie w[z] come costo per lo sp per z, aggiornato la FRT e memorizza anche il vicino che ha dato questo costo minimo
-
-Vantaggi: la memoria, meno spazio della map, i DV sono lineari, le MAP erano quadratiche
-
-Complessità:
-- M[/IR] = 2m n (n-1) ovvero n-1 iterazioni, mando n volte V e 2m sono i link del grafo
-- T[/IR] = (n-1) tau(n) tempo ideale per trasmettere V, che è O(1) quando G consente messaggi lunghi, altrimenti O(n)
-
-Se tau O(1) diventa tempo lineare in n e M = O(mn)
-
-Nell'altro caso abbiamo O(mn^2) per i messaggi e tempo quadratico
+Se $tau(n) = O(1)$ il tempo diventa lineare in $n$ e il numero di messaggi è $O(m n)$. Se invece $tau(n) = O(n)$ il tempo diventa quadratico in $n$ e il numero di messaggi è $O(m n^2)$.

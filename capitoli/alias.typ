@@ -140,3 +140,11 @@
   )
   $linkop(#x)$
 }
+
+#let mapg(x) = {
+  let mapgop = math.class(
+    "unary",
+    "MAP",
+  )
+  $mapgop(#x)$
+}
