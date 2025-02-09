@@ -124,3 +124,19 @@
 
 #let sender = $"sender"$
 #let next = $"next"$
+
+#let treenx(x) = {
+  let treenxop = math.class(
+    "unary",
+    "tree",
+  )
+  $treenxop"-"N(#x)$
+}
+
+#let link(x) = {
+  let linkop = math.class(
+    "unary",
+    "link",
+  )
+  $linkop(#x)$
+}

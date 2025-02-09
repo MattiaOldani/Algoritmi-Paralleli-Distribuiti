@@ -20,132 +20,97 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Spanning tree
 
-Osservazione: broadcast, wp e tr sono Theta(m) con m = numero di link e n entità
+Il problema dello *spanning tree* è molto comodo perché permette di ridurre un grafo completo ad uno molto più leggero che semplifica la complessità di comunicazione. Dobbiamo stare comunque attenti ai costi, soprattutto a quelli di costruzione dell'albero e a quelli a cui andremo incontro con questa nuova rappresentazione.
 
-Ma noi sappiamo che $ n - 1 lt.eq m lt.eq ... = O(n^2) $ ma n-1 è un albero e l'altro è un grafo completo. Noi non scegliamo la rete, possiamo costruire una sotto-rete
+Il problema dello spanning tree ci richiede di costruire una *sotto-rete* tale che:
+- ogni entità è presente;
+- ogni entità è connessa;
+- è priva di cicli.
 
-Perché importante? Strategia:
-- al posto di usare tutta G usiamo una sottorete per minimizzare la complessità di comunicazione, quale sottorete? ALBERO
+Per risolvere questo problema dobbiamo dare un po' di conoscenza dell'albero alle entità.
 
-Attenzione ai costi:
-- costruzione dell'albero
-- costo originale sull'albero
+Definiamo $treenx(x) subset.eq N(x)$ il sottoinsieme dei vicini di $x$ che partecipano all'albero e che sono collegati direttamente a $x$. Diciamo che un arco $(x,y)$ sta nell'insieme $link(treenx(x))$ se e solo se $y in treenx(x)$. Questo insieme è l'insieme degli archi uscenti da $x$ diretti nei nodi di $treenx(x)$.
 
-Ad esempio, BD sull'albero è esattamente n-1 su alberi perché hai $ 2m - n + 1 = 2(n-1) - n + 1 = 2n - 2 - n + 1 = n - 1 $
+Infine, definiamo Tree come $ union.big_(x in E) link(treenx(x)) . $
 
-Vogliamo costruire sottorete tale che
-- coinvolge tutte le entità
-- le entità sono connesse
-- è priva di cicli
+== Prima versione
 
-La soluzione distribuita richiede la conoscenza dell0albero all'interno della rete, ovvero ogni entità vedrà una piccole parte dell'albero (noi siamo migliori)
+Usando sempre le restrizioni RI, definiamo il protocollo *shout*.
 
-Definiamo $forall x in E$ la roba Tree-N(x) subset N(x), sottoinsieme di vicini che partecipano all'albero e che sono collegati direttamente a x
+La *radice* dell'albero è l'entità che inizierà il protocollo. Il protocollo fa quello che dice il suo nome: ogni entità chiederà ai suoi vicini se vogliono partecipare, con il loro arco, all'albero.
 
-Diciamo che un arco (x,y) appartiene agli archi link(Tree-N(x)) se e solo se y sta in sta cosa. Link è un insieme di archi.
+Vediamo i passi che segue questo protocollo:
+- la radice $s$ spedisce $Q$ ai suoi vicini e attende le risposte;
+- ogni entità $x$ diversa da $s$ che riceve $Q$:
+  - per la prima volta risponde *SI* e invia $Q$ ai suoi vicini, mettendosi in attesa come ha fatto $s$;
+  - per l'$n$-esima volta ($n gt.eq 2$) risponde *NO*;
+- ogni entità memorizza il padre dal quale ha ricevuto $Q$ e tutti i figli che hanno risposto *SI*;
+- una entità termina quando riceve tutte le risposte.
 
-Infine, Tree è union di x in E di link(Tree-N(x))
+Abbiamo a disposizione i seguenti *stati*:
+- $S = {"iniziatore", "inattivo", "attivo", "finito"}$;
+- $sinit = {"iniziatore", "inattivo"}$;
+- $sterm = {"finito"}$.
 
-Dobbiamo anche dire chi è la radice
+#align(center)[
+  #pseudocode-list(title: [*Iniziatore*])[
+    + Se riceve impulso spontaneo
+      - root = true
+      - counter = 0
+      - $treenx(x) = emptyset.rev$
+      - $send(Q)$ to $N(x)$
+      - become attivo
+  ]
+]
 
-Noi usiamo restrizioni RI con il protocollo Shout:
-- ogni entità vede solo i suoi Tree-N(x) e tiene traccia del padre
+#align(center)[
+  #pseudocode-list(title: [*Inattivo*])[
+    + Se riceve $Q$
+      - root = false
+      - parent = sender
+      - counter = 1
+      - $treenx(x) = sender$
+      - $send("SI")$ to sender
+      - if counter $== abs(N(x))$
+        - become finito
+      - else
+        - $send(Q)$ to $N(x) - sender$
+        - become attivo
+  ]
+]
 
-La radice è l'entità che inizia il protocollo
+#align(center)[
+  #pseudocode-list(title: [*Attivo*])[
+    + Se riceve $Q$
+      - $send("NO")$ to sender
+    + Se riceve SI
+      - $treenx(x) = treenx(x) union {sender}$
+      - counter = counter + $1$
+      - if counter $== abs(N(x))$
+        - become finito
+    + Se riceve NO
+      - counter = counter + $1$
+      - if counter $== abs(N(x))$
+        - become finito
+  ]
+]
 
-Strategia Shout: CHIEDI!
+Questo protocollo è corretto:
+- *terminazione*: ogni entità entra nello stato terminale quando ha ricevuto tutte le risposte;
+- *albero*: tutte le entità sono presenti e connesse per flooding + SI al primo $Q$ che ricevono, e non ho dei cicli perché rispondo SI una e una sola volta (la radice unica che dice sempre NO).
 
-Vediamo:
-- la s(root) spedisce Q ai suoi vicini e attende le risposte
-- ogni entità x diversa da s che riceve Q per:
-  - la prima volta risponde YES e invia Q ai suoi vicini e si mette in attesa
-  - una volta successiva alla prima risponde NO
-- serve memorizzare l'entità padre e le entità che mi rispondono yes
-- entità termina quando riceve tutte le risposte
+Il *numero di messaggio* inviati è $ M["shout"] = underbracket(2 M["flooding"], Q + "risposta") = 2[2m - (n-1)] approx 4m $ mentre il *tempo* è $ T["shout"] = T["flooding"] + underbracket(quad 1 quad, "ultimo" Q) lt.eq d + 1 . $
 
-In pratica è flooding con reply. Dobbiamo
-- mandare messaggi Q yes no
-- aggiornare variabili root, parent, tree-N(x), counter
-- aggiornare lo stato per raggiungere la terminazione
+== Seconda versione
 
-Abiamo quindi
-- stati iniziatore, inattivo, attivo, finito
-- Sinit = {iniziatore, inattivo}
-- Sterm = {finito}
+Una seconda versione di shout, che chiameremo *shout++*,cerca di eliminare qualche messaggio, perché come tempo ci siamo con il lower bound.
 
-Dobbiamo definire le azioni per iniz, inat e attivo
+Questa versione cancella i NO. La decisione dietro a questa pazza idea è perché i NO vengono inviati al sender di una $Q$ quando il nodo ha già ricevuto un $Q$. Teniamo quindi tutti i SI e interpretiamo i $Q$ doppioni come se fossero dei NO.
 
-Iniziatore:
-- se impulso spontaneo
-  - root = true
-  - counter = 0
-  - tree-N(x) = vuoto
-  - send(Q) to N(x)
-  - become attivo
+Il nuovo *numero di messaggi* è $2m$, perché mandiamo su uno stesso link:
+- due $Q$ (_se già ricevuto_);
+- un $Q$ e un SI (_se non ricevuto_).
 
-Inattivo
-- se riceve Q
-  - root = false
-  - parent = sender
-  - counter = 1
-  - tree-N(x) = sender
-  - send yes to sender
-  - if counter = |N(x)| then
-    - become finito
-  - else
-    - send(Q) to N(x) - sender
-    - become attivo
-
-Attivo
-- se ricevo Q
-  - send no to sender
-- se riceve yes
-  - Tree-N(x) U= {sender}
-  - counter += 1
-  - if counter == |N(x)| then
-    - become finito
-- se riceve no
-  - counter += 1
-  - if counter == |N(x)| then
-    - become finito
-
-Correttezza di Shout
-- terminazione: in assenza di errori ricevuto un numero di risposte pari ai Q inviati, diventando finito
-- tutte le entità sono presenti, grazie al flooding di Q
-- le entità sono connesse: grazie al fatto che al primo Q rispondo con yes
-- è priva di cicli: ogni entità risponde yes una e una sola volta, tranne la radice che risponde sempre no
-
-Vediamo i costi:
-- M[Shout] = 2 M[flooding] (Q + risposta) = 2[2m - (n-1)] circa 4m
-- T[Shout] = T[flooding] + 1 lt.eq d + 1 (+1 è risposta ultimo Q)
-
-I lower bound sono:
-- M[SPT / RI] gt.eq m
-- T[SPT / RI] gt.eq d
-
-Vediamo Shout++: posso eliminare qualche messaggio? Per il tempo ci siamo, i messaggi non tanto
-
-Yes si tengono, sono necessari, quelli no li cancelliamo. Questo perché se prendo no vuol dire che il bro ha già ricevuto un Q, quindi mi basta vedere un Q e interpretarlo come no
-
-Se la risposta è no ho già ricevuto un Q a cui ha detto si, inviano altri Q in giro, quindi se ricevuto un Q lo interpreto come no e basta
-
-Nuovo costo è 2m, un q in una direzione e nell'altra yes oppure q, quindi M[Shout++] = 2m (q-q o q-yes)
-
-Altra soluzione usa il protocollo traversal, che però costruisce l'albero in sequenza, e a noi piace in parallelo. Tree sono i link su cui viaggiano i return (solo un padre)
+Una soluzione alternativa usa il protocollo traversal, però costruendo l'albero in sequenza andiamo un po' controllo l'approccio parallelo che ci piace. In ogni caso, per traversal i link sui quali viaggiano le return sono i link dentro Tree.
