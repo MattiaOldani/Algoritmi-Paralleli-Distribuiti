@@ -20,172 +20,170 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Traversal
 
-Ogni entità della rete deve essere visitata MA sequenzialmente, cioè una dopo l'altra. Applicazioni è la gestione delle risorse condivise. Versione ristretta del wake up.
+Il problema *traversal* richiede di visitare *SEQUENZIALMENTE* ogni entità del nostro sistema. In poche parole, ad ogni unità di tempo devo visitare al massimo una entità nuova.
 
-Si parte da una visitata, le altre sono dormienti/unvisited, finale ho tutte visited ma una alla volta, in sequenza, ad ogni unità di tempo se ne aggiunge una nuova alla volta
+== Prima versione
 
-Protocollo depth-first traversal, ovvero una visita in profondità, "si scende sempre verso il vicino non ancora visitato"
+Per risolvere questo problema useremo una *visita in profondità* con il protocollo *depth-first traversal*. Inoltre, useremo un messaggio particolare, un *token* $T$, che può viaggiare nelle rete al massimo una volta in ogni istante di tempo.
 
-Usiamo un messaggio particolare, un token T. In ogni istante di tempo deve viaggiare al più un token. Quando un nodo lo riceve diventa visitato.
+Vediamo i passi che segue questo protocollo:
+- un nodo che riceve $T$ per la prima volta ricorda il sender e invia il token ad uno dei suoi vicini, aspettando un messaggio di *return/back-edge*. Quando riceve questo messaggio, effettua queste operazioni per ogni entità vicina. Quando la lista finisce, invia un return al sender;
+- un nodo che ha già ricevuto $T$ spedisce un back-edge al sender.
 
-Passi:
-- un nodo che riceve $T$ per la prima volta:
-  - ricorda il sender
-  - fa una lista dei vicini non visitati
-  - invia $T$ ad uno di essi
-  - aspetta un messaggio da quest'ultima di return/back-edge (svegliata da T / già ricevuto il token)
-- il vicino che ricevete $T$:
-  - se è il primo $T$ ripete il punto 1
-  - altrimenti (già visitato) spedisce back-edge
-- solo dopo aver finito la lista dei vicini non visitati, un nodo deve inviare la return al sender
+Notiamo subito che abbiamo tre tipi di messaggi: il *token* $T$, il *return* (_ho finito la visita dei vicini_) e il back-edge (_ho già ricevuto il token, quindi sono già stato visitato_).
 
-Abbiamo tre tipi di messaggi:
-- T token (ordine)
-- B back-edge (già visitato)
-- R return (finito con i vicini)
+Utilizziamo per il DF-traversal i seguenti *stati*:
+- $S = {"initiator", "idle", "visited", "done"}$;
+- $sinit = {"initiator", "idle"}$;
+- $sterm = {"done"}$.
 
-Vediamo DF-traversal:
-- S = {initiator, idle, visited, done}
-- Sinit = {initiator, idle}
-- Sterm = {done}
+Come restrizioni usiamo ancora *RI*.
 
-Restrizioni sono RI
+#align(center)[
+  #pseudocode-list(title: [*Initiator*])[
+    + Se riceve un impulso spontaneo
+      - initiator = true
+      - unvisited = $N(x)$
+      - $"visit"()$
+  ]
+]
 
-Initiator
-- se impulso spontaneo
-  - initiator = true
-  - unvisited = N(x)
-  - visit
+#align(center)[
+  #pseudocode-list(title: [*Idle*])[
+    + Se riceve $T$
+      - entry = sender
+      - unvisited = $N(x) - sender$
+      - initiator = false
+      - $"visit"()$
+  ]
+]
 
-Idle
-- se receiving(T)
-  - entry = sender
-  - unvisited = N(x) - sender
-  - initiator = false
-  - visit
+#align(center)[
+  #pseudocode-list(title: [*Visited*])[
+    + Se riceve $R$
+      - $"visit"()$
+    + Se riceve $B$
+      - $"visit"()$
+    + Se riceve $T$
+      - unvisited = unvisited - sender
+      - send $B$ to sender
+  ]
+]
 
-Procedura VISIT
-- if unvisited non vuoto then
-  - next = unvisited
-  - send(T) to next
-  - become visited
-- else
-  - if (initiator == false) then
-    - send(return) to entry
-  - become done
+#align(center)[
+  #pseudocode-list(title: [*Procedura visit*])[
+    + if unvisited $eq.not emptyset.rev$
+      + next = unvisited
+      + $send(T)$ to next
+      + become visited
+    + else
+      + if initiator == false
+        + $send(R)$ to entry
+      + become done
+  ]
+]
 
-Visited
-- se receiving(return)
-  - visit
-- se receiving(back-edge)
-  - visit
-- se receiving(T)
-  - unvisited = unvisited - sender
-  - send(back-edge) to sender
+Per tutto il resto c'è *mastercard*.
 
-Per tutto il resto c'è mastercard
+Per calcolare la *complessità*, notiamo che se $x$ e $y$ sono due entità, sul loro canale passa sempre il token $T$ e il return $R$ o il back-edge $B$. Il traversal è *sequenziale*, quindi passo per tutte le entità una per volta con il token, ma allora *tempo* e *numero di messaggi* sono $2m$, perché mando due messaggi per ogni arco. Vediamo i *lower bound* di questo problema.
 
-Complessità: osserviamo che se $x,y$ sono identità, sul loro canale passa il token + return o back-edge
+Il numero di messaggi è $M["traversal"] gt.eq m$ per il teorema che abbiamo visto nel problema broadcast. Il tempo invece è $T["traversal"] gt.eq n-1$ perché ogni nodo viene visitato in sequenza. Notiamo che in un grafo, il numero di archi è tale che $ n - 1 lt.eq m lt.eq frac(n (n-1), 2), $ quindi il tempo che abbiamo con questo algoritmo è $O(n^2)$.
 
-Traversal è sequenziale, perché le attivo una alla volta, ma allora T[DF-traversal] e M[DF-traversal] sono 2m (M perché mando due messaggi per m archi), mentre il tempo idem perché sono sequenziale
+Con questi bound, il nostro algoritmo è ottimale per il numero di messaggi, ma non il tempo.
 
-Vediamo i lower bound di traversal:
-- M[traversal] gt.eq m (vale per broadcast)
-- T[traversal] gt.eq n-1 (ogni nodo viene visitato in sequenza)
+== Seconda versione
 
-Nel caso di un grafo connesso si passa a $ n - 1 lt.eq m lt.eq frac(n(n-1), 2) = O(n^2) $ quindi DF-traversal ottimo per messaggi ma nel caso peggiore non ottimo per il tempo, passiamo da n teorico a n^2 peggiore
+Cerchiamo di migliorare il nostro protocollo. Osserviamo che ad ogni istante di tempo viaggia un solo messaggio: cerchiamo di aggiungere *concorrenza* con una quantità di messaggi dell'ordine di $O(m)$ per rendere più veloce il protocollo.
 
-Osservazione: il problema per il costo del tempo è che ad ogni istante viaggia un solo messaggio --> mettiamo concorrenza, aggiungendo una quantità opportuna di messaggi $O(m)$ che possano rendere più veloce il protocollo
+Notiamo che un nodo non visitato che riceve il token $T$ potrebbe dire ai suoi vicini che lo ha ricevuto e che non dovrebbero poi mandarglielo in futuro. Questa idea cerca di evitare l'invio di un token $T$ su un link che sarebbe back-edge. Questa situazione effettivamente non si presenta, perché il tutto dipende dai clock delle singole entità, ma migliora considerevolmente le prestazioni.
 
-Possiamo evitare di inviare T su un link back-edge?
+Il nuovo numero di messaggi è $2n - 2$ per i token $T$ e le return $R$, sommati a $2m - (n-1)$ per i messaggi ai visited, sommati a $2(m - (n-1))$ per gli errori di invio de token sui back-edge. In totale abbiamo un numero di messaggi che è $O(m)$.
 
-Idea: un nodo non visitato che riceve $T$ comunica l'evento ai vicini mandando un messaggio visited, così i vicini tolgono quel nodo dagli unvisited
+Calcolando il tempo ideale di questa soluzione, ovvero il tempo che non contiene ritardi, errori, e fa viaggiare token $T$ e avvisi di visited assieme, esso diventa $T(n) = n - 1$ che è il nostro lower bound.
 
-Abbiamo evitato i link back-edge? NO, ma migliorato lo stesso
+Questo nuovo protocollo, che chiamiamo *DF\*-traversal*, è ottimo per messaggi e tempo.
 
-La nuova complessità è:
-- messaggi
-  - 2n-2 per T + return
-  - 2m - (n-1) per visited
-  - 2(m - (n-1)) per errori sull'invio dei T su back-edge
+Vediamo gli *stati* che utilizza:
+- $S = {"initiator", "idle", "available", "visited", "done"}$;
+- $sinit = {"initiator", "idle"}$;
+- $sterm = {"done"}$.
 
-In totale è O(m)
+Vediamo infine come funziona effettivamente il protocollo.
 
-Tempo ideale non ho ritardi e gli errori non capitano. Inoltre, visited viaggia assieme a T, quindi il tempo diventa 2(n-1) (TR) = O(n) che è finalmente il lower bound
+#align(center)[
+  #pseudocode-list(title: [*Initiator*])[
+    + Se riceve impulso spontaneo
+      - initiator = true
+      - unvisited = $N(x)$
+      - next = unvisited
+      - $send(T)$ to next
+      - $send(V)$ to $N(x) - next$
+      - become visited
+  ]
+]
 
-DF\* è protocollo con ste modifiche, ed è ottimo per messaggi e tempo
+#align(center)[
+  #pseudocode-list(title: [*Idle*])[
+    + Se riceve $T$
+      - unvisited = $N(x)$
+      - $"first-visit"()$
+    + Se riceve $V$
+      - unvisited = $N(x) - sender$
+      - become available
+  ]
+]
 
-S = {initiator, idle, available, visited, done}, Sinit = {initiator, idle}, Sterm = {done}
+#align(center)[
+  #pseudocode-list(title: [*Available*])[
+    + Se riceve $T$
+      - $"first-visit"()$
+    + Se riceve $V$
+      - unvisited = unvisited - sender
+  ]
+]
 
-Initiator
-- spontaneo
-  - initiator = true
-  - unvisited = N(x)
-  - next = unvisited
-  - send T to next
-  - send visited to N(x) - next
-  - become visited
+#align(center)[
+  #pseudocode-list(title: [*Visited*])[
+    + Se riceve $V$
+      - unvisited = unvisited - sender
+      - if (next == sender) then $"visit"()$
+    + Se riceve $T$
+      - unvisited = unvisited - sender
+      - if (next == sender) then $"visit"()$
+    + Se riceve $R$
+      - $"visit"()$
+  ]
+]
 
-Idle
-- riceve T
-  - unvisited = N(x)
-  - first-visit
-- riceve visited
-  - unvisited = N(x) - sender
-  - become available
+#align(center)[
+  #pseudocode-list(title: [*Procedura first-visit*])[
+    - la usiamo la prima volta che si riceve il token $T$
+    + initiator = false
+    + entry = sender
+    + unvisited = unvisited - sender
+    + if unvisited $eq.not emptyset.rev$
+      + next = unvisited
+      + $send(T)$ to next
+      + $send(V)$ to $N(x) - {sender,next}$
+      + become visited
+    + else
+      + $send(R)$ to sender
+      + $send(V)$ to $N(x) - sender$
+      + become done
+  ]
+]
 
-Available
-- ricevet T
-  - first-visit
-- riceve visited
-  - unvisited = unvisited - sender
-
-Visited
-- riceve visited
-  - unvisited = unvisited - sender
-  - if (next = sender) then visit
-- riceve T
-  - unvisited = unvisited - sender
-  - if (next = sender) then visit
-- riceve return
-  - visit
-
-Procedura first-visit (prima volta che si riceve il token per mandare tutto asssieme)
-- initiator = false
-- entry = sender
-- unvisited = unvisited - sender
-- if non vuoto then
-  - next = unvisited
-  - send(T) to next
-  - send(visited) to N(x) - {entry,next}
-  - become visited
-- else
-  - send(return) to entry
-  - send(visited) to N(x) - entry
-  - become done
-
-Procedura visit (già mandato il visited)
-- if unvisited non vuoto then
-  - next = unvisited
-  - send(T) to next
-- else
-  - if not initiator then
-    - send(return) to entry
-  - become done
+#align(center)[
+  #pseudocode-list(title: [*Procedura visit*])[
+    - la usiamo quando abbiamo già mandato il visited $V$
+    + if unvisited $eq.not emptyset.rev$
+      + next = unvisited
+      + $send(T)$ to next
+    + else
+      + if initiator == false
+        + $send(R)$ to entry
+      + become done
+  ]
+]

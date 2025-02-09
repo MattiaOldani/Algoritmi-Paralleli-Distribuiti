@@ -123,3 +123,4 @@
 #let sfinal = $S_"final"$
 
 #let sender = $"sender"$
+#let next = $"next"$
