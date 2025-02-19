@@ -34,7 +34,7 @@ Un buon algoritmo sequenziale è quello che utilizza $M[n]$ come *accumulatore*,
 
 #align(center)[
   #pseudocode-list(title: [*Sommatoria sequenziale*])[
-    + for $i = 1$ to $n$ do
+    + for $i = 1$ to $n - 1$ do
       + $M[n] = M[n] + M[i]$
     + *output* $M[n]$
   ]
@@ -64,7 +64,7 @@ Una soluzione migliore considera la _proprietà associativa_ della somma per eff
 
 #v(12pt)
 
-Quello che otteniamo è un albero binario, sempre con $n-1$ processori ma altezza dell'albero logaritmica in $n$. Il risultato di ogni somma viene scritto nella cella di indice maggiore, quindi vediamo la rappresentazione corretta.
+Quello che otteniamo è un albero binario con $n/2$ processori ma altezza dell'albero logaritmica in $n$. Il risultato di ogni somma viene scritto nella cella di indice maggiore, quindi vediamo la rappresentazione corretta.
 
 #v(12pt)
 
@@ -72,7 +72,7 @@ Quello che otteniamo è un albero binario, sempre con $n-1$ processori ma altezz
 
 #v(12pt)
 
-Quello che possiamo fare è sommare, ad ogni passo $i$, gli elementi che sono a distanza $i$: partiamo sommando elementi adiacenti a distanza $1$, poi $2$, fino a sommare al passo $log(n)$ gli ultimi due elementi a distanza $n/2$.
+Quello che possiamo fare è sommare, ad ogni passo $i$, gli elementi che sono a distanza $2^(i-1)$: partiamo sommando elementi adiacenti a distanza $1$, poi $2$, fino a sommare al passo $log(n)$ gli ultimi due elementi a distanza $n/2$.
 
 #align(center)[
   #pseudocode-list(title: [*Sommatoria parallela*])[
@@ -100,7 +100,7 @@ Quello che possiamo fare è sommare, ad ogni passo $i$, gli elementi che sono a 
 ]
 
 #proof[
-  Per dimostrare che l'algoritmo è corretto mostriamo che al passo parallelo $i$, nella cella $2^i k$, ho i $2^i - 1$ valori precedenti sommati a $M[2^i k]$, ovvero che $ M[2^i k] = M[2^i k] + dots + M[2^i (k-1) + 1] . $
+  Per dimostrare che l'algoritmo è corretto mostriamo che al passo parallelo $i$, nella cella $2^i k$, ho la somma di $2^i$ valori, presi a partire da $M[2^i k]$ andando indietro, ovvero che $ M[2^i k] = M[2^i k] + dots + M[2^i (k-1) + 1] . $
 
   Notiamo che se $i = log_2(n)$ allora ho un solo processore attivo, quindi abbiamo $k = 1$ e otteniamo la definizione di sommatoria, ovvero $ M[n] = M[n] + dots + M[1] . $
 
@@ -153,9 +153,7 @@ L'*operazione iterata* è una operazione associativa *OP* sulla quale definiamo 
 - prende in *input* una serie di valori $M[1], dots, M[n]$;
 - restituisce in *output*, dentro il registro $M[n]$, l'operazione *OP* calcolata su tutti gli $M[i]$.
 
-Abbiamo visto che sommatoria ammette soluzioni efficienti con $p(n) = O(n/log(n))$ processori utilizzati e tempo $T(n,p(n)) = O(log(n))$.
-
-Con modelli PRAM più potenti (_non EREW_) possiamo ottenere un tempo costante per AND e OR.
+Abbiamo visto che il problema sommatoria ammette soluzioni efficienti con $p(n) = O(n/log(n))$ processori utilizzati e tempo $T(n,p(n)) = O(log(n))$. Con dei modelli PRAM più potenti (_che non sono EREW_) possiamo ottenere un tempo costante per AND e OR.
 
 Supponiamo una CRCW-PRAM e vediamo il problema *AND-iterato*, ovvero $ M[n] = and.big_i M[i] . $
 

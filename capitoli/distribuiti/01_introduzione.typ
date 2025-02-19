@@ -52,11 +52,11 @@ La rete ha una serie di *parametri*: essi sono il *numero di entità* $n$, il *n
 
 La comunicazione avviene usando una *etichettatura* sui link. Per l'entità $x$, l'etichettatura è denotata con $lambda_x$ e poi l'arco che abbiamo davanti. Indichiamo inoltre con:
 - $nin(x)$ insieme dei vicini di ingresso ad $x$;
-- $nout(x)$ insieme dei vicini di uscita di $x$;
+- $nout(x)$ insieme dei vicini di uscita di $x$.
 
 La rete ha una serie di *assiomi*:
 - *ritardo finito di comunicazione*: in assenza di errori, un messaggio spedito prima o poi arriverà, non sappiamo quando ma arriverà;
-- *orientamento locale*, ogni entità riesce a distinguere tra i suoi vicini gli insiemi $nin(x)$ e $nout(x)$ grazie alla conoscenza di $lambda_x$;
+- *orientamento locale*, ogni entità riesce a distinguere tra i suoi vicini gli insiemi $nin(x)$ e $nout(x)$ grazie alla conoscenza di $lambda_x$.
 
 La rete, inoltre, può essere utilizzata con delle *restrizioni*: esse sono dichiarate al momento della scrittura del codice e sono delle *proprietà positive* della rete su cui facciamo affidamento. Vediamone alcune di quelle più usate:
 - *restrizioni sulla comunicazione*:

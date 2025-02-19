@@ -20,21 +20,6 @@
 
 // Capitolo
 
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-#set heading(numbering: "1.")
-
-#show outline.entry.where(level: 1): it => {
-  v(12pt, weak: true)
-  strong(it)
-}
-
-#outline(indent: auto)
-/*********************************************/
-/***** DA CANCELLARE PRIMA DI COMMITTARE *****/
-/*********************************************/
-
 = Applicazioni di sommatoria
 
 Il problema sommatoria lo possiamo utilizzare come modulo per risolvere dei problemi più complessi. In questo capitolo vediamo quattro problemi molto semplici.
@@ -69,7 +54,7 @@ Il migliore tempo sequenziale è $T(n,1) = n(2n-1) = 2n^2 - n$.
 
 Per l'approccio parallelo, l'idea è usare il modulo del prodotto interno in parallelo per $n$ volte. Il vettore se è acceduto simultaneamente dai moduli precedenti ci obbliga ad avere una politica CREW.
 
-Questa idea utilizza $p(n) = n^2/log(n)$ processori con tempo $T(n,p(n)) = log(n)$. 'efficienza vale $ E = frac(n^2, n^2/log(n) log(n)) arrow.long C eq.not 0 . $
+Questa idea utilizza $p(n) = n^2/log(n)$ processori con tempo $T(n,p(n)) = log(n)$. L'efficienza vale $ E = frac(2n^2 - n, n^2/log(n) log(n)) arrow.long C eq.not 0 . $
 
 == Prodotto matrice matrice
 

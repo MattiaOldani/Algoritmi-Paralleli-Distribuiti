@@ -84,7 +84,7 @@ Per ottenere il numero di elementi complessivo, che effettivamente ci interessa,
   ]
 ]
 
-Questo algoritmo non assolutamente EREW, vista la lettura concorrente, ma la scrittura non lo è invece, visto che scriviamo in celle ogni volta diverse. L'algoritmo è quindi CREW.
+Questo algoritmo non è assolutamente EREW, vista la lettura concorrente, ma la scrittura non lo è invece, visto che scriviamo in celle ogni volta diverse. L'algoritmo è quindi CREW.
 
 Per il primo ciclo for usiamo $p(n) = n^2$ processori con tempo $T(n,p(n)) = 4$, che però con il *principio di Wyllie* trasformiamo in $p(n) = n^2 / log(n)$ processori con tempo $T(n,p(n)) = log(n)$.
 
@@ -112,7 +112,7 @@ Per il bitonic sort prendiamo spunto dal merge sort, che usa la tecnica Divide e
 
 La routine di merge effettua l'unione dei due array ordinati $A_s$ e $A_d$ scorrendoli in sequenza e mettendo i valori ordinati in $A$. Nel caso peggiore, questa routine impiega tempo $T_m (n) = n$. Il tempo di complessivo di merge sort è invece $T(n) = n log(n)$.
 
-Possiamo sfruttare l'idea che ci dà il merge sort? Dividiamo continuamente il vettore fino ad arrivare ad un elemento. Qua devo fare il merge, se usassi un approccio parallelo avrei $log(n)-1$ passi paralleli essendo un albero. Purtroppo, il merge non è parallelizzabile, e quindi avrei sempre e comunque un tempo $T(n,p(n) = n log(n)$.
+Possiamo sfruttare l'idea che ci dà il merge sort? Dividiamo continuamente il vettore fino ad arrivare ad un elemento. Qua devo fare il merge, se usassi un approccio parallelo avrei $log(n)-1$ passi paralleli essendo un albero. Purtroppo, il merge non è parallelizzabile, e quindi avrei sempre e comunque un tempo $T(n,p(n)) = n log(n)$.
 
 Quando l'operazione di merge è facile? Supponiamo $A_s$ e $A_d$ ordinate con gli elementi di $A_s$ tutti minori di $A_d$. La routine di merge è facilissima: basta concatenare le due sequenze.
 

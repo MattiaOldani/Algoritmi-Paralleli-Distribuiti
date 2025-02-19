@@ -47,9 +47,7 @@ Il numero di messaggi è:
 - $2m$ per acquisire informazioni dai vicini;
 - $2m(n-1)$ per il broadcast delle informazioni su $T$.
 
-In totale, il *numero di messaggi* è $approx 2 m n$, che vale $n^2$ quando $G$ è sparso. Il *tempo*, invece, è molto difficile da calcolare.
-
-Vediamo come questo protocollo richieda tanta memoria per poter essere eseguito.
+In totale, il *numero di messaggi* è $approx 2 m n$, che vale $n^2$ quando $G$ è sparso. Il *tempo*, invece, è molto difficile da calcolare. Vediamo come questo protocollo richieda tanta memoria per poter essere eseguito.
 
 == Seconda versione
 

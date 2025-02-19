@@ -167,7 +167,7 @@ Questa versione dell'algoritmo è una versione che non usa minmax ma *merge-spli
 
 #align(center)[
   #pseudocode-list(title: [*Ordinamento parallelo con merge-split*])[
-    + for $i = 1$ to $p$
+    + for $i = 1$ to $p$ do
       + for $k in {2t - (i space % space 2) bar.v 1 lt.eq t lt.eq p/2}$ par do
         + $"MergeSplit"(k,k+1)$
   ]

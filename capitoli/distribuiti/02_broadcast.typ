@@ -147,7 +147,7 @@ Il problema del *wake-up* è una versione generale del broadcast: in quest'ultim
 
 Useremo il protocollo *w-flood*, che utilizza i seguenti *stati*:
 - $S = {"dormiente", "attivo"}$;
-- $sinit = sstart {"dormiente"}$;
+- $sinit = sstart = {"dormiente"}$;
 - $sfinal = sterm = {"attivo"}$.
 
 Vediamo le *regole* per questa versione rilassata di broadcast.

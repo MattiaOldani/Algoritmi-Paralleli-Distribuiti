@@ -63,7 +63,7 @@ Il tempo totale di questo nuovo algoritmo è è $T(n,p(n)) = n/p + sqrt(p)$. L'e
 
 Per avere questa efficienza scelgo $p sqrt(p) = n$, ovvero $p = n^(2/3)$.
 
-Con questa scelta di $p$ il tempo totale diventa $T(n,p(n)) = O(root(3,x))$. E questo valore è ottimo: usando una MESH di dimensione $sqrt(p)$ il limite teorico per Max è $sqrt(p) = sqrt(n^(2/3)) = root(3,x)$, che è esattamente il valore che abbiamo ottenuto noi, quindi siamo soddisfatti.
+Con questa scelta di $p$ il tempo totale diventa $T(n,p(n)) = O(root(3,n))$. E questo valore è ottimo: usando una MESH di dimensione $sqrt(p)$ il limite teorico per Max è $sqrt(p) = sqrt(n^(2/3)) = root(3,n)$, che è esattamente il valore che abbiamo ottenuto noi, quindi siamo soddisfatti.
 
 == Ordinamento
 

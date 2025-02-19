@@ -60,7 +60,7 @@ Ci sono alcuni confrontatori che invertono l'ordine dei due fili. Come possiamo 
 
 #v(12pt)
 
-Con i confrontatori possiamo create delle *reti di confrontatori*, ovvero delle reti che spostano sopra e sotto i valori inseriti nei fili. Una *sorting network* è una rete di confrontatori capace di ordinare una sequenza di valori contenuta nei fili.
+Con i confrontatori possiamo creare delle *reti di confrontatori*, ovvero delle reti che spostano sopra e sotto i valori inseriti nei fili. Una *sorting network* è una rete di confrontatori capace di ordinare una sequenza di valori contenuta nei fili.
 
 Qua sotto vediamo un esempio di sorting network per input di grandezza $n = 3$.
 

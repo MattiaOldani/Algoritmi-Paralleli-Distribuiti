@@ -50,7 +50,7 @@ Infine, da ora chiameremo OTHER la quantità $N(x) - sender$.
 
 == Prima versione
 
-Una prima versione di protocollo per questo problema (_elect minimum_) è il protocollo *all the way*. I messaggi viaggiano intorno all'anello, inoltrati dalle varie entità in una direzione prestabilita. I messaggi mandati, per ora, sono nella forma (select, $id(x)$).
+Una prima versione di protocollo per questo problema con politica *elect minimum* è il protocollo *all the way*. I messaggi viaggiano intorno all'anello, inoltrati dalle varie entità in una direzione prestabilita. I messaggi mandati, per ora, sono nella forma (select, $id(x)$).
 
 Quando una entità $x$ riceve un messaggio $E$ dall'entità $y$ inoltra $E$ all'entità successiva, assieme ad un messaggio $E'$ con $id(x)$ al posto di $id(y)$.
 
@@ -122,6 +122,6 @@ Il *numero di messaggi* che vengono inviati con questo protocollo è $ M["all-th
 
 == Seconda versione
 
-Questa prima versione è troppo costosa, quindi passiamo al piano due: scegliamo elect minimum initiator come politica di ricerca. In questo caso, solo gli iniziatori spediscono un proprio messaggio $E$, tutte le altre entità inoltrano e basta. Quando gli initiator hanno finito il calcolo del leader, mandano un messaggio di fine a tutti gli altri. aggiungendo quindi $n$ messaggi finali.
+Questa prima versione è troppo costosa, quindi passiamo al piano due: scegliamo *elect minimum initiator* come politica di ricerca. In questo caso, solo gli iniziatori spediscono un proprio messaggio $E$, tutte le altre entità inoltrano e basta. Quando gli initiator hanno finito il calcolo del leader, mandano un messaggio di fine a tutti gli altri. aggiungendo quindi $n$ messaggi finali.
 
 Il *numero di messaggi* diventa ora $n k + n$, con $k$ numero di initiator, mentre il *tempo* è $lt.eq 3n - 1$, che si raggiunge quando $2$ initiator si attivano in momenti diversi.

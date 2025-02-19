@@ -74,9 +74,7 @@ Vediamo un po' di fatti che riguardano questo algoritmo:
 
 Ci serve sicuramente un vettore di successori, che usiamo per ricavare le celle da sommare tra loro.
 
-Sia $S$ tale vettore. Sia $S[k]$ il successore di $M[k]$. Come inizializzo $S$?
-
-Prima della prima iterazione assegno
+Sia $S$ tale vettore. Sia $S[k]$ il successore di $M[k]$. Come inizializzo $S$? Prima della prima iterazione assegno
 - $S[k] = k+1$;
 - $S[n] = 0$.
 
@@ -120,9 +118,9 @@ Mostriamo che vale la proprietà descritta nella dimostrazione precedente.
 
   Concentriamoci sugli indici che avanzano da analizzare.
 
-  Se $2^(i - 1) < t lt.eq 2^i$ allora possiamo scrivere $t$ come $t = 2^(i - 1) + a$ e quindi $ M[a + 2^(i - 1)] &= underbracket(M[a], a lt.eq 2^(i - 1)) + underbracket(M[a + 2^(i - 1)], a + 2^(i - 1) > 2^(i - 1)) = \ &= M[1] + dots + M[a] + bar.v + M[a + 1] + dots + A[a + 2^(i - 1)] . $
+  Se $2^(i - 1) < t lt.eq 2^i$ allora possiamo scrivere $t$ come $t = 2^(i - 1) + a$ e quindi $ M[a + 2^(i - 1)] &= underbracket(M[a], a lt.eq 2^(i - 1)) + underbracket(M[a + 2^(i - 1)], a + 2^(i - 1) > 2^(i - 1)) = \ &= M[1] + dots + M[a] + bar.v + M[a + 1] + dots + M[a + 2^(i - 1)] . $
 
-  Se invece $t > 2^i$ allora possiamo scrivere $t$ come $t = a + 2^i$ e quindi $ M[a + 2^i] &= M[(a + 2^(i - 1)) + 2^(i - 1)] = underbracket(M[a + 2^(i - 1)], a + 2^(i - 1) > 2^(i - 1)) + underbracket([a + 2^i], a + 2^i > 2^(i - 1)) = \ &= M[a + 1] + dots + M[a + 2^(i - 1)] + bar.v + M[a + 2^(i - 1) + 1] + dots + M[a + 2^i] . $
+  Se invece $t > 2^i$ allora possiamo scrivere $t$ come $t = a + 2^i$ e quindi $ M[a + 2^i] &= M[(a + 2^(i - 1)) + 2^(i - 1)] = underbracket(M[a + 2^(i - 1)], a + 2^(i - 1) > 2^(i - 1)) + underbracket(M[a + 2^i], a + 2^i > 2^(i - 1)) = \ &= M[a + 1] + dots + M[a + 2^(i - 1)] + bar.v + M[a + 2^(i - 1) + 1] + dots + M[a + 2^i] . $
 
   In entrambi gli indici mancanti la proprietà risulta vera.
 ]

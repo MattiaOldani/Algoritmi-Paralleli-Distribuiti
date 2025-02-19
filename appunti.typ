@@ -82,4 +82,3 @@
 #pagebreak()
 
 #include "capitoli/distribuiti/06_routing.typ"
-#pagebreak()

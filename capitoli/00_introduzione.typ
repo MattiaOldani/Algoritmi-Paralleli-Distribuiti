@@ -24,8 +24,6 @@
 
 = Introduzione
 
-== Algoritmi 101
-
 Un *algoritmo* è una sequenza finita di istruzioni che non sono ambigue e che terminano, ovvero restituiscono un risultato. Gli *algoritmi sequenziali* avevano un solo esecutore, mentre gli algoritmi di questo corso utilizzano un *pool di esecutori*.
 
 Le problematiche da risolvere negli algoritmi sequenziali si ripropongono anche qua, ovvero:
@@ -50,8 +48,6 @@ Un *algoritmo distribuito* è un algoritmo *asincrono* che risponde al motto _"o
 Qualche esempio di architettura distribuita:
 - *reti di calcolatori*: rete internet;
 - *reti di sensori*: sistemi con limitate capacità computazionali che rispondono a messaggi _ack_, _recover_, _wake up_, eccetera.
-
-== La risorsa tempo
 
 Il *tempo* è una variabile fondamentale nell'analisi degli algoritmi. Definiamo prima la funzione $ T(x) = hash"operazioni elementari sull'istanza" x. $
 

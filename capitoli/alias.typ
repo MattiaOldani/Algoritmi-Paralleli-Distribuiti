@@ -5,6 +5,10 @@
 
 // Alias
 
+// Architetture parallele
+
+#let over(base, simbolo) = overset(base, simbolo)
+
 #let send(x, y) = {
   let sendop = math.class(
     "unary",
@@ -18,8 +22,6 @@
 #let NC = $italic("NC")$
 
 #let istr(i) = $"istruzione"_(#i)$
-
-#let over(base, simbolo) = overset(base, simbolo)
 
 #let pad(x) = {
   let padop = math.class(
@@ -44,6 +46,8 @@
   )
   $desop(#x)$
 }
+
+// Architetture distribuite
 
 #let valore(x) = {
   let valoreop = math.class(

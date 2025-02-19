@@ -32,7 +32,7 @@ Vediamo i passi che segue questo protocollo:
 - un nodo che riceve $T$ per la prima volta ricorda il sender e invia il token ad uno dei suoi vicini, aspettando un messaggio di *return/back-edge*. Quando riceve questo messaggio, effettua queste operazioni per ogni entità vicina. Quando la lista finisce, invia un return al sender;
 - un nodo che ha già ricevuto $T$ spedisce un back-edge al sender.
 
-Notiamo subito che abbiamo tre tipi di messaggi: il *token* $T$, il *return* (_ho finito la visita dei vicini_) e il back-edge (_ho già ricevuto il token, quindi sono già stato visitato_).
+Notiamo subito che abbiamo tre tipi di messaggi: il *token* $T$, il *return* (_ho finito la visita dei vicini_) e il *back-edge* (_ho già ricevuto il token, quindi sono già stato visitato_).
 
 Utilizziamo per il DF-traversal i seguenti *stati*:
 - $S = {"initiator", "idle", "visited", "done"}$;
@@ -89,7 +89,7 @@ Per tutto il resto c'è *mastercard*.
 
 Per calcolare la *complessità*, notiamo che se $x$ e $y$ sono due entità, sul loro canale passa sempre il token $T$ e il return $R$ o il back-edge $B$. Il traversal è *sequenziale*, quindi passo per tutte le entità una per volta con il token, ma allora *tempo* e *numero di messaggi* sono $2m$, perché mando due messaggi per ogni arco. Vediamo i *lower bound* di questo problema.
 
-Il numero di messaggi è $M["traversal"] gt.eq m$ per il teorema che abbiamo visto nel problema broadcast. Il tempo invece è $T["traversal"] gt.eq n-1$ perché ogni nodo viene visitato in sequenza. Notiamo che in un grafo, il numero di archi è tale che $ n - 1 lt.eq m lt.eq frac(n (n-1), 2), $ quindi il tempo che abbiamo con questo algoritmo è $O(n^2)$.
+Il numero di messaggi è $M["traversal"] gt.eq m$ per il teorema che abbiamo visto nel problema Broadcast. Il tempo invece è $T["traversal"] gt.eq n-1$ perché ogni nodo viene visitato in sequenza. Notiamo che in un grafo, il numero di archi è tale che $ n - 1 lt.eq m lt.eq frac(n (n-1), 2), $ quindi il tempo che abbiamo con questo algoritmo è $O(n^2)$.
 
 Con questi bound, il nostro algoritmo è ottimale per il numero di messaggi, ma non il tempo.
 
