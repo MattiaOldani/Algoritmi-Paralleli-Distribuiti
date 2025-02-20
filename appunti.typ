@@ -9,6 +9,9 @@
 
 // Introduzione
 
+#set page(numbering: "1")
+#context counter(page).update(1)
+
 #include "capitoli/00_introduzione.typ"
 #pagebreak()
 

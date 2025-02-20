@@ -10,7 +10,7 @@
   set list(indent: 1.2em)
   set enum(indent: 1.2em)
 
-  set page(numbering: "1")
+  // set page(numbering: "I")
 
   align(center + horizon)[
     #block(text(weight: 700, 2.75em, title))
@@ -32,24 +32,23 @@
 
   show outline.entry: it => {
     if it.element.func() == figure {
-      // https://github.com/typst/typst/issues/2461
-      let res = link(
-        it.element.location(),
-        if it.element.numbering != none {
-          it.element.supplement + [ ]
-          numbering(it.element.numbering, ..it.element.counter.at(it.element.location()))
-        }
-          + [ --- ]
-          + it.element.body,
-      )
+      let res
+      if it.element.numbering != none {
+        res = link(
+          it.element.location(),
+          it.indented(it.prefix(), [ --- ] + it.element.body + h(1fr) + it.page()),
+        )
+      } else {
+        res = link(
+          it.element.location(),
+          it.indented(it.prefix(), it.element.body + h(1fr) + it.page()),
+        )
+      }
 
-      res += h(1fr)
-
-      res += link(it.element.location(), it.page)
       v(2.3em, weak: true)
-      strong(text(size: 13pt, res))
+      strong(text(size: 16pt, res))
     } else {
-      h(1em * (it.level - 1)) + it
+      it
     }
   }
 
@@ -60,7 +59,7 @@
 
   let chapters-and-headings = figure.where(kind: "parte", outlined: true).or(heading.where(outlined: true))
 
-  outline(indent: auto, target: chapters-and-headings)
+  outline(indent: 2em, target: chapters-and-headings)
 
   show link: underline
 
